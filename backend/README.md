@@ -1,7 +1,10 @@
 # YY Parfums — Backend
 
-Node.js + Express + Prisma, backed by Postgres (same provider locally and on Railway —
-see below).
+Node.js + Express + Prisma, backed by MongoDB (same provider locally and on Railway —
+see below). The DB **must** be a replica set — a bare single-node `mongod` will reject
+the transactions/nested writes this backend relies on (product size updates, order
+creation). A free [MongoDB Atlas](https://www.mongodb.com/atlas) M0 cluster is a replica
+set by default and is the easiest way to satisfy this, locally and in production.
 
 ## How ordering actually works here
 
@@ -20,14 +23,15 @@ Dirham (DH) — the backend itself is currency-agnostic, it just stores integers
 ```
 cd backend
 npm install
-npx prisma migrate dev   # applies the schema to your local Postgres DB
-npm run seed              # loads the 4 products + 3 packs, plus one admin account
-npm run dev               # http://localhost:4000
+npx prisma db push        # syncs collections/indexes to your MongoDB DB
+npm run seed               # loads the 4 products + 3 packs, plus one admin account
+npm run dev                # http://localhost:4000
 ```
 
-Set `DATABASE_URL` in `.env` to a local Postgres instance (e.g. `docker run -e
-POSTGRES_PASSWORD=postgres -p 5432:5432 postgres` and
-`postgresql://postgres:postgres@localhost:5432/postgres`) before running the above.
+Set `DATABASE_URL` in `.env` to a MongoDB replica set — the simplest option is a free
+[Atlas M0 cluster](https://www.mongodb.com/atlas) (`mongodb+srv://...`), which is a
+replica set by default. Don't point this at a plain `docker run mongo` container without
+`--replSet` — transactions will fail against it.
 
 `.env` is already created from `.env.example`. The seed script creates the first staff
 login from `ADMIN_EMAIL` / `ADMIN_PASSWORD` (defaults: `admin@yyparfums.com` /
@@ -51,27 +55,22 @@ All routes are prefixed `/api`.
 - `GET /orders`, `GET /orders/:id` — `?status=pending|confirmed|shipped|delivered|cancelled` filter supported on the list
 - `PATCH /orders/:id` — `{ status }`, moves an order through pending → confirmed → shipped → delivered (or cancelled)
 
-## Deploying to Railway (Postgres)
+## Deploying to Railway (MongoDB)
 
-The schema avoids SQLite-only quirks (no enums, no native arrays), so the move to
-Postgres is a config change, not a rewrite:
-
-1. Add a Postgres plugin to the Railway project and copy its `DATABASE_URL`.
-2. In `prisma/schema.prisma`, change the datasource provider:
-   ```prisma
-   datasource db {
-     provider = "postgresql"
-     url      = env("DATABASE_URL")
-   }
-   ```
-3. Set `DATABASE_URL`, `JWT_SECRET`, `CORS_ORIGIN` (the deployed frontend origin), and
-   `ADMIN_EMAIL`/`ADMIN_PASSWORD` as Railway environment variables.
-4. Build/start commands for the Railway service: `npm run build` then `npm start` —
-   `start` already runs `prisma migrate deploy` before launching the server, and
-   `postinstall` runs `prisma generate`, so no custom Railway start command is needed.
-5. Run `npm run seed` once against the Railway database (or via a Railway one-off command)
+1. Create a free [MongoDB Atlas](https://www.mongodb.com/atlas) M0 cluster (recommended —
+   it's a replica set out of the box, which Prisma requires for the transactions/nested
+   writes this backend uses). Add a database user and allow network access from anywhere
+   (`0.0.0.0/0`), since Railway's outbound IPs aren't static. Copy the `mongodb+srv://...`
+   connection string.
+2. Set `DATABASE_URL` (the Atlas connection string), `JWT_SECRET`, `CORS_ORIGIN` (the
+   deployed frontend origin), and `ADMIN_EMAIL`/`ADMIN_PASSWORD` as Railway environment
+   variables on the backend service.
+3. Build/start commands for the Railway service: `npm run build` then `npm start` —
+   `start` already runs `prisma db push` before launching the server, and `postinstall`
+   runs `prisma generate`, so no custom Railway start command is needed.
+4. Run `npm run seed` once against the Atlas database (or via a Railway one-off command)
    to load the catalog and create the first admin account.
-6. **Uploaded images (`/uploads`)**: Railway's filesystem is ephemeral by default — files
+5. **Uploaded images (`/uploads`)**: Railway's filesystem is ephemeral by default — files
    written to `uploads/` disappear on every redeploy/restart. Attach a
    [Railway volume](https://docs.railway.com/guides/volumes) mounted at the backend's
    `uploads` directory before staff start uploading real product photos, or images will
@@ -85,20 +84,17 @@ the store outgrows what it runs on today. Roughly the order you'd hit these in:
 1. **Analytics aggregation (`/api/analytics`)** — currently fetches every order (+ items)
    in the selected date range and aggregates in JavaScript. That's simple and fast at
    today's order volume, but doesn't scale past a few thousand orders per range. Replace
-   it with indexed SQL `GROUP BY` aggregate queries, or a scheduled daily rollup table,
-   instead of loading every matching row per request.
-2. **SQLite → Postgres** — covered above. SQLite also doesn't handle concurrent writers
-   well, so this is the same point where running more than one backend instance becomes
-   possible at all.
-3. **Uploaded images on local disk** — fine for one instance with a Railway volume
+   it with a MongoDB aggregation pipeline (`$group`/`$match`), or a scheduled daily rollup
+   collection, instead of loading every matching document per request.
+2. **Uploaded images on local disk** — fine for one instance with a Railway volume
    attached (see above). If you outgrow a single instance, or want a CDN in front of
    product photos, move to object storage (S3, Cloudinary, Railway bucket storage) and
    keep storing the returned URL exactly like `image` is stored today — it's already just
    a URL string, no schema change needed.
-4. **Single Express instance** — once on Postgres, this scales horizontally (multiple
-   instances behind a load balancer) since nothing here holds in-memory state between
-   requests other than the `JWT_SECRET`, which is already a shared env var.
-5. **No caching** — `GET /products` / `GET /packs` rarely change; if storefront traffic
+3. **Single Express instance** — this scales horizontally (multiple instances behind a
+   load balancer) since nothing here holds in-memory state between requests other than
+   the `JWT_SECRET`, which is already a shared env var.
+4. **No caching** — `GET /products` / `GET /packs` rarely change; if storefront traffic
    grows, cache those responses for a short TTL (or invalidate on write) instead of
    hitting the database on every page load.
 

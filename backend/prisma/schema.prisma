@@ -3,7 +3,7 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
+  provider = "mongodb"
   url      = env("DATABASE_URL")
 }
 
@@ -11,7 +11,7 @@ datasource db {
 // checkout form, and customer service confirms orders using one of these accounts.
 // role: 'admin' | 'agent'. Admins can create more staff accounts; agents cannot.
 model AdminUser {
-  id           String   @id @default(cuid())
+  id           String   @id @default(cuid()) @map("_id")
   email        String   @unique
   passwordHash String
   name         String?
@@ -22,7 +22,7 @@ model AdminUser {
 // gender: 'her' | 'him'  ·  family: Floral/Woody/Oriental/Fresh/Gourmand/Citrus
 // prices are whole-dirham (DH) amounts, matching the frontend catalog
 model Product {
-  id         String        @id
+  id         String        @id @map("_id")
   name       String
   gender     String
   family     String
@@ -41,7 +41,7 @@ model Product {
 // Each product owns its own list of sizes - staff can add any custom size (any ml
 // amount, any price), not just a fixed 10ml/20ml/Full trio. ml === 0 means "Full Bottle".
 model ProductSize {
-  id        String  @id @default(cuid())
+  id        String  @id @default(cuid()) @map("_id")
   productId String
   product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
   ml        Int
@@ -50,7 +50,7 @@ model ProductSize {
 }
 
 model Pack {
-  id             String        @id
+  id             String        @id @map("_id")
   name           String
   decantMl       Int
   price          Int
@@ -62,7 +62,7 @@ model Pack {
 }
 
 model PackProduct {
-  id        String  @id @default(cuid())
+  id        String  @id @default(cuid()) @map("_id")
   packId    String
   pack      Pack    @relation(fields: [packId], references: [id])
   productId String
@@ -73,7 +73,7 @@ model PackProduct {
 // instead of a separate saved-address table.
 // status: 'pending' (awaiting customer service confirmation) | 'confirmed' | 'shipped' | 'delivered' | 'cancelled'
 model Order {
-  id            String      @id @default(cuid())
+  id            String      @id @default(cuid()) @map("_id")
   status        String      @default("pending")
   paymentMethod String      @default("cod")
   subtotal      Int
@@ -90,7 +90,7 @@ model Order {
 
 // kind: 'product' | 'pack'. Product lines carry ml (10/20/0=FullBottle); pack lines leave ml null.
 model OrderItem {
-  id           String   @id @default(cuid())
+  id           String   @id @default(cuid()) @map("_id")
   orderId      String
   order        Order    @relation(fields: [orderId], references: [id])
   kind         String
@@ -105,7 +105,7 @@ model OrderItem {
 }
 
 model NewsletterSignup {
-  id        String   @id @default(cuid())
+  id        String   @id @default(cuid()) @map("_id")
   email     String   @unique
   createdAt DateTime @default(now())
 }
