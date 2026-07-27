@@ -49,3 +49,7 @@ temp
 .env.local
 .env.*.local
 !.env.example
+
+# Claude Code local session state #
+####################################
+.claude/scheduled_tasks.lock

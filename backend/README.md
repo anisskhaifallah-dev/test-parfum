@@ -57,22 +57,36 @@ All routes are prefixed `/api`.
 
 ## Deploying to Railway (MongoDB)
 
-1. Create a free [MongoDB Atlas](https://www.mongodb.com/atlas) M0 cluster (recommended —
-   it's a replica set out of the box, which Prisma requires for the transactions/nested
-   writes this backend uses). Add a database user and allow network access from anywhere
-   (`0.0.0.0/0`), since Railway's outbound IPs aren't static. Copy the `mongodb+srv://...`
-   connection string.
-2. Set `DATABASE_URL` (the Atlas connection string), `JWT_SECRET`, `CORS_ORIGIN` (the
-   deployed frontend origin), and `ADMIN_EMAIL`/`ADMIN_PASSWORD` as Railway environment
-   variables on the backend service.
-3. Railway service settings: Build command stays default (`npm run build`, and
-   `postinstall` already runs `prisma generate`). Set **Pre-Deploy Command** to
-   `npx prisma db push --accept-data-loss --skip-generate` (runs once per deploy, before
-   traffic switches over) and leave **Custom Start Command** blank so it defaults to
-   `npm start`.
-4. Run `npm run seed` once against the Atlas database (or via a Railway one-off command)
-   to load the catalog and create the first admin account.
-5. **Uploaded images (`/uploads`)**: Railway's filesystem is ephemeral by default — files
+1. Get a MongoDB connection string. Two options:
+   - **[MongoDB Atlas](https://www.mongodb.com/atlas) M0 (recommended)** — free, and a
+     replica set by default, which Prisma requires for the transactions/nested writes
+     this backend uses (product size updates, order creation). Add a database user and
+     allow network access from anywhere (`0.0.0.0/0`), since Railway's outbound IPs
+     aren't static.
+   - **Railway's own MongoDB plugin** — easier to wire up (same project, no external
+     account), but it's a standalone `mongod`, not a replica set. Product size edits and
+     checkout will throw errors against it. Fine for a quick test deploy, not for real use.
+   - Either way, the connection string **must include a database name in the path** (e.g.
+     `/yy_parfums` before the `?`) — Atlas's copy-paste connection string omits this by
+     default, and Railway's MongoDB plugin connection string has no path at all. Without
+     it, every query fails with `Invalid namespace specified: .Product` (empty db name).
+   - If you add a database name to a Railway MongoDB plugin string, also add
+     `authSource=admin` — the root user only exists in the `admin` database, and
+     specifying a different db in the path changes the driver's default auth source,
+     causing `SCRAM failure: Authentication failed.` otherwise.
+2. Set `DATABASE_URL` (the connection string from step 1), `JWT_SECRET`, `CORS_ORIGIN`
+   (the deployed frontend origin, **no trailing slash** — CORS origin matching is exact),
+   and `ADMIN_EMAIL`/`ADMIN_PASSWORD` as Railway environment variables on the backend
+   service.
+3. Railway service settings: **Root Directory** must be `backend` (this is a monorepo —
+   without this, Railway's builder scans the repo root and can't detect a Node app at
+   all). Build command stays default (`npm run build`, and `postinstall` already runs
+   `prisma generate`). Set **Pre-Deploy Command** to
+   `npx prisma db push --accept-data-loss --skip-generate && npm run seed` (runs once per
+   deploy, before traffic switches over — loads the catalog and creates the first admin
+   account; both are idempotent, safe to run on every deploy) and leave **Custom Start
+   Command** blank so it defaults to `npm start`.
+4. **Uploaded images (`/uploads`)**: Railway's filesystem is ephemeral by default — files
    written to `uploads/` disappear on every redeploy/restart. Attach a
    [Railway volume](https://docs.railway.com/guides/volumes) mounted at the backend's
    `uploads` directory before staff start uploading real product photos, or images will
