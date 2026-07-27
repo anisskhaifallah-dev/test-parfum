@@ -1,0 +1,444 @@
+//
+//
+// user.scss
+//
+// Place your own theme CSS or SCSS rules below this line, these rules will override any Bootstrap and theme variables.
+
+/*-----------------------------------------------
+|   Mobile bottom navigation
+-----------------------------------------------*/
+.navbar-bottom-mobile {
+  display: flex;
+  justify-content: space-around;
+  align-items: stretch;
+  background-color: $white;
+  border-top: 1px solid $border-color;
+  box-shadow: 0 -2px 10px rgba($black, 0.06);
+  padding-bottom: env(safe-area-inset-bottom, 0);
+}
+
+.navbar-bottom-mobile-item {
+  flex: 1 1 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.125rem;
+  padding: 0.5rem 0.25rem;
+  min-height: 56px;
+  color: $gray-700;
+  font-size: $font-size-sm * 0.75;
+
+  .feather {
+    width: 20px;
+    height: 20px;
+  }
+
+  &.active,
+  &:hover {
+    color: $primary;
+  }
+}
+
+@include media-breakpoint-down(lg) {
+  body {
+    padding-bottom: 60px;
+  }
+}
+
+/*-----------------------------------------------
+|   Nav icon badges (cart / wishlist counts)
+-----------------------------------------------*/
+.nav-icons {
+  align-items: center;
+  gap: 1.25rem;
+}
+.nav-icons a {
+  display: inline-flex;
+  align-items: center;
+}
+.icon-badge {
+  position: relative;
+  display: inline-flex;
+}
+.icon-badge .badge-count {
+  position: absolute;
+  top: -0.4rem;
+  right: -0.6rem;
+  background: $primary;
+  color: $white;
+  font-size: 0.65rem;
+  line-height: 1;
+  padding: 0.2rem 0.4rem;
+  border-radius: 999px;
+  font-weight: 700;
+  min-width: 1.1rem;
+  text-align: center;
+}
+
+/*-----------------------------------------------
+|   Shop grid / product cards
+-----------------------------------------------*/
+.shop-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 1.75rem;
+}
+.shop-card {
+  display: block;
+  text-decoration: none;
+  color: inherit;
+  position: relative;
+  // Caps how far a card can stretch when it's the lone item left in an incomplete
+  // grid row (the grid track itself still gets 1fr, but the card inside it won't
+  // balloon to fill that whole width) - centered so it doesn't look off to one side.
+  max-width: 340px;
+  margin-inline: auto;
+  width: 100%;
+}
+.shop-card-image-wrap {
+  position: relative;
+  overflow: hidden;
+  background: $gray-200;
+}
+.shop-card img {
+  width: 100%;
+  aspect-ratio: 3 / 4;
+  object-fit: cover;
+  display: block;
+}
+.shop-card-unavailable img {
+  opacity: 0.55;
+}
+.shop-card-badge {
+  position: absolute;
+  top: 0.6rem;
+  left: 0.6rem;
+  background: $gray-1000;
+  color: $white;
+  font-size: 0.68rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  font-weight: 700;
+  padding: 0.25rem 0.55rem;
+  border-radius: 3px;
+}
+.shop-card-wishlist {
+  position: absolute;
+  top: 0.6rem;
+  right: 0.6rem;
+  background: rgba($white, 0.9);
+  border-radius: 50%;
+  width: 2.1rem;
+  height: 2.1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+}
+.shop-card-wishlist svg {
+  width: 16px;
+  height: 16px;
+  stroke: $gray-900;
+  fill: none;
+  transition: fill 0.15s ease, stroke 0.15s ease;
+}
+.shop-card-wishlist.active svg {
+  fill: $danger;
+  stroke: $danger;
+}
+.shop-card-body {
+  padding-top: 0.85rem;
+}
+.shop-card-family {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: $gray-600;
+  display: block;
+  margin-bottom: 0.2rem;
+}
+.shop-card-name {
+  font-weight: 700;
+  margin: 0 0 0.2rem;
+  color: $gray-1000;
+}
+.shop-card-price {
+  font-weight: 700;
+  color: $primary;
+}
+
+/*-----------------------------------------------
+|   Filter bar
+-----------------------------------------------*/
+.filter-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 2.5rem;
+}
+.filter-pill {
+  border: 1px solid $border-color;
+  background: $white;
+  border-radius: 999px;
+  padding: 0.4rem 1.1rem;
+  font-size: 0.85rem;
+  cursor: pointer;
+  color: $gray-900;
+}
+.filter-pill.active {
+  background: $gray-1000;
+  color: $white;
+  border-color: $gray-1000;
+}
+.filter-group-label {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: $gray-600;
+  width: 100%;
+  margin: 1rem 0 0.5rem;
+}
+.filter-group-label:first-child {
+  margin-top: 0;
+}
+
+/*-----------------------------------------------
+|   Product detail page
+-----------------------------------------------*/
+.pdp-image {
+  width: 100%;
+  aspect-ratio: 4 / 5;
+  object-fit: cover;
+  background: $gray-200;
+}
+.notes-pyramid {
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+  margin: 1.75rem 0;
+  padding: 1.25rem;
+  background: $gray-100;
+  border-radius: $border-radius;
+}
+.notes-row {
+  display: flex;
+  gap: 1rem;
+  align-items: baseline;
+}
+.notes-row .notes-label {
+  width: 70px;
+  flex-shrink: 0;
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: $gray-600;
+  font-weight: 700;
+}
+.notes-row .notes-values {
+  font-size: 0.95rem;
+  color: $gray-900;
+}
+.size-picker {
+  display: flex;
+  gap: 0.6rem;
+  margin: 1.25rem 0;
+}
+.size-option {
+  border: 1px solid $border-color;
+  border-radius: $border-radius;
+  padding: 0.55rem 1.1rem;
+  cursor: pointer;
+  background: $white;
+  text-align: center;
+  font-size: 0.9rem;
+}
+.size-option.active {
+  border-color: $primary;
+  background: $primary;
+  color: $white;
+}
+
+/*-----------------------------------------------
+|   Cart / wishlist line lists
+-----------------------------------------------*/
+.line-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+.line-item {
+  display: flex;
+  gap: 1.25rem;
+  align-items: center;
+  border-bottom: 1px solid $border-color;
+  padding-bottom: 1.25rem;
+}
+.line-item img {
+  width: 84px;
+  height: 84px;
+  object-fit: cover;
+  flex-shrink: 0;
+  border-radius: $border-radius;
+}
+.line-item-info {
+  flex: 1;
+  min-width: 0;
+}
+.qty-stepper {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+.qty-stepper button {
+  width: 28px;
+  height: 28px;
+  border: 1px solid $border-color;
+  background: $white;
+  border-radius: $border-radius;
+  cursor: pointer;
+  line-height: 1;
+}
+.empty-state {
+  text-align: center;
+  padding: 4rem 1rem;
+  color: $gray-600;
+}
+
+/*-----------------------------------------------
+|   Staff dashboard (staff.html)
+-----------------------------------------------*/
+.staff-shell {
+  display: flex;
+  min-height: 100vh;
+}
+.staff-sidebar {
+  width: 220px;
+  flex-shrink: 0;
+  background: $gray-1000;
+  color: rgba($white, 0.85);
+  display: flex;
+  flex-direction: column;
+  padding: 1.5rem 1rem;
+}
+.staff-sidebar-brand {
+  font-weight: 700;
+  color: $white;
+  margin-bottom: 2rem;
+  font-size: 1.1rem;
+}
+.staff-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  flex: 1 1 auto;
+}
+.staff-nav-link {
+  display: block;
+  width: 100%;
+  text-align: left;
+  background: transparent;
+  border: none;
+  color: rgba($white, 0.75);
+  padding: 0.6rem 0.8rem;
+  border-radius: $border-radius;
+  font-size: 0.9rem;
+}
+.staff-nav-link:hover {
+  background: rgba($white, 0.08);
+  color: $white;
+}
+.staff-nav-link.active {
+  background: $primary;
+  color: $white;
+}
+.staff-sidebar-footer {
+  border-top: 1px solid rgba($white, 0.15);
+  padding-top: 1rem;
+  margin-top: 1rem;
+  color: rgba($white, 0.6);
+}
+.staff-main {
+  flex: 1 1 auto;
+  min-width: 0;
+  padding: 2rem;
+}
+
+@include media-breakpoint-down(md) {
+  .staff-shell {
+    flex-direction: column;
+  }
+  .staff-sidebar {
+    width: 100%;
+    flex-direction: row;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+  .staff-sidebar-brand {
+    margin-bottom: 0;
+    margin-right: 1rem;
+  }
+  .staff-nav {
+    flex-direction: row;
+    flex: 0 0 auto;
+  }
+  .staff-sidebar-footer {
+    border-top: none;
+    margin-top: 0;
+    margin-left: auto;
+    padding-top: 0;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  .staff-sidebar-footer span {
+    margin-bottom: 0 !important;
+  }
+}
+
+// Order status colors, in the commands table - one glance should tell you where an
+// order stands without reading the text.
+.status-select {
+  font-weight: 700;
+  border: none;
+  color: $white;
+  width: 100%;
+  min-width: 140px;
+  padding-right: 1.75rem;
+  text-transform: capitalize;
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23fff' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M2 5l6 6 6-6'/%3e%3c/svg%3e");
+}
+.status-select option {
+  color: $gray-1000;
+  font-weight: 400;
+}
+.status-select.status-pending {
+  background-color: #fd7e14;
+}
+.status-select.status-confirmed {
+  background-color: #0d6efd;
+}
+.status-select.status-shipped {
+  background-color: #6f42c1;
+}
+.status-select.status-delivered {
+  background-color: #198754;
+}
+.status-select.status-cancelled {
+  background-color: #dc3545;
+}
+
+.dashboard-note {
+  color: $danger;
+  font-size: 0.78rem;
+  font-style: italic;
+  margin-top: 1.5rem;
+  margin-bottom: 0;
+}
+.dashboard-note code {
+  color: inherit;
+  background: none;
+  padding: 0;
+}

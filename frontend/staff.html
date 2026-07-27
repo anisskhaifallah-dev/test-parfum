@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en-US" dir="ltr">
+
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="robots" content="noindex, nofollow">
+
+    <title>Staff | YY Parfums</title>
+
+    <link rel="stylesheet" href="/src/scss/theme.scss">
+  </head>
+
+  <body>
+
+    <div id="staff-login" class="mx-auto" style="max-width:360px;margin-top:5rem;">
+      <h1 class="fw-normal mb-4 text-center">YY Parfums &mdash; Staff</h1>
+      <form id="login-form">
+        <div class="mb-2"><input class="form-control" id="login-email" type="email" placeholder="Email" required /></div>
+        <div class="mb-2"><input class="form-control" id="login-password" type="password" placeholder="Password" required /></div>
+        <div id="login-error" class="text-danger fs--1 mb-2 d-none"></div>
+        <button class="btn btn-dark w-100" type="submit">Log in</button>
+      </form>
+    </div>
+
+    <div id="staff-dashboard" class="staff-shell d-none">
+      <aside class="staff-sidebar">
+        <div class="staff-sidebar-brand">YY Parfums</div>
+        <nav class="staff-nav">
+          <button type="button" class="staff-nav-link active" data-panel="dashboard">Dashboard</button>
+          <button type="button" class="staff-nav-link" data-panel="catalogs">Catalogs</button>
+          <button type="button" class="staff-nav-link" data-panel="commands">Commands</button>
+        </nav>
+        <div class="staff-sidebar-footer">
+          <span id="staff-who" class="d-block fs--1 mb-2"></span>
+          <button id="logout-btn" class="btn btn-sm btn-outline-secondary w-100" type="button">Log out</button>
+        </div>
+      </aside>
+
+      <main class="staff-main">
+
+        <section id="panel-dashboard" class="staff-panel" data-panel="dashboard">
+          <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-2">
+            <h4 class="mb-0">Dashboard</h4>
+            <div class="d-flex flex-wrap align-items-center gap-2">
+              <div class="btn-group btn-group-sm" role="group" id="range-presets">
+                <button type="button" class="btn btn-outline-secondary" data-range="7d">7 Days</button>
+                <button type="button" class="btn btn-outline-secondary active" data-range="30d">30 Days</button>
+                <button type="button" class="btn btn-outline-secondary" data-range="90d">90 Days</button>
+                <button type="button" class="btn btn-outline-secondary" data-range="year">This Year</button>
+                <button type="button" class="btn btn-outline-secondary" data-range="all">All Time</button>
+              </div>
+              <input type="date" id="range-from" class="form-control form-control-sm" style="width:auto;" />
+              <span class="text-700 fs--1">to</span>
+              <input type="date" id="range-to" class="form-control form-control-sm" style="width:auto;" />
+            </div>
+          </div>
+
+          <div id="analytics-empty" class="empty-state d-none">
+            <p>No orders in this period.</p>
+          </div>
+
+          <div id="analytics-content">
+            <div class="row g-3 mb-4">
+              <div class="col-6 col-md-3">
+                <div class="card p-3 text-center h-100">
+                  <span class="text-700 fs--1 text-uppercase">Revenue</span>
+                  <span class="fs-3 fw-bold" id="kpi-revenue">&ndash;</span>
+                </div>
+              </div>
+              <div class="col-6 col-md-3">
+                <div class="card p-3 text-center h-100">
+                  <span class="text-700 fs--1 text-uppercase">Orders</span>
+                  <span class="fs-3 fw-bold" id="kpi-orders">&ndash;</span>
+                </div>
+              </div>
+              <div class="col-6 col-md-3">
+                <div class="card p-3 text-center h-100">
+                  <span class="text-700 fs--1 text-uppercase">Avg Order Value</span>
+                  <span class="fs-3 fw-bold" id="kpi-aov">&ndash;</span>
+                </div>
+              </div>
+              <div class="col-6 col-md-3">
+                <div class="card p-3 text-center h-100">
+                  <span class="text-700 fs--1 text-uppercase">Cancelled Rate</span>
+                  <span class="fs-3 fw-bold" id="kpi-cancelled">&ndash;</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="row g-3 mb-3">
+              <div class="col-lg-8">
+                <div class="card p-3">
+                  <h6 class="mb-2">Revenue over time</h6>
+                  <div style="position:relative;height:260px;"><canvas id="chart-revenue"></canvas></div>
+                </div>
+              </div>
+              <div class="col-lg-4">
+                <div class="card p-3">
+                  <h6 class="mb-2">Orders by status</h6>
+                  <div style="position:relative;height:260px;"><canvas id="chart-status"></canvas></div>
+                </div>
+              </div>
+            </div>
+
+            <div class="row g-3 mb-3">
+              <div class="col-lg-6">
+                <div class="card p-3">
+                  <h6 class="mb-2">Top sellers by revenue</h6>
+                  <div style="position:relative;height:260px;"><canvas id="chart-top-sellers"></canvas></div>
+                </div>
+              </div>
+              <div class="col-lg-6">
+                <div class="card p-3">
+                  <h6 class="mb-2">Sales by fragrance family</h6>
+                  <div style="position:relative;height:260px;"><canvas id="chart-family"></canvas></div>
+                </div>
+              </div>
+            </div>
+
+            <div class="row g-3">
+              <div class="col-lg-6">
+                <div class="card p-3">
+                  <h6 class="mb-2">For Her vs For Him</h6>
+                  <div style="position:relative;height:240px;"><canvas id="chart-gender"></canvas></div>
+                </div>
+              </div>
+              <div class="col-lg-6">
+                <div class="card p-3">
+                  <h6 class="mb-2">Decant size preference</h6>
+                  <div style="position:relative;height:240px;"><canvas id="chart-size"></canvas></div>
+                </div>
+              </div>
+            </div>
+
+            <p class="dashboard-note">This dashboard aggregates every matching order in memory on each request, which is fine at today's order volume. As order volume grows into the thousands, move these calculations to indexed SQL aggregate queries (or a scheduled summary/rollup table) instead of scanning all matching orders per request &mdash; see &ldquo;Scaling this project&rdquo; in <code>backend/README.md</code>.*</p>
+          </div>
+        </section>
+
+        <section id="panel-catalogs" class="staff-panel d-none" data-panel="catalogs">
+          <h4 class="mb-3">Catalogs</h4>
+          <div class="table-responsive mb-4">
+            <table class="table align-middle">
+              <thead>
+                <tr><th>Order</th><th></th><th>Name</th><th>Gender</th><th>Family</th><th>Sizes</th><th>Price range</th><th>Status</th><th></th></tr>
+              </thead>
+              <tbody id="products-tbody"></tbody>
+            </table>
+          </div>
+
+          <h5 id="product-form-title" class="mb-2">Add product</h5>
+          <form id="product-form" class="row g-2">
+            <div class="col-md-6"><input class="form-control" id="product-name" placeholder="Name" required /></div>
+            <div class="col-md-3">
+              <select class="form-select" id="product-gender" required>
+                <option value="her">Her</option>
+                <option value="him">Him</option>
+              </select>
+            </div>
+            <div class="col-md-3">
+              <select class="form-select" id="product-family" required>
+                <option>Floral</option>
+                <option>Woody</option>
+                <option>Oriental</option>
+                <option>Fresh</option>
+                <option>Gourmand</option>
+                <option>Citrus</option>
+              </select>
+            </div>
+
+            <div class="col-12">
+              <label class="form-label fs--1 text-700 mb-1">Image</label>
+              <div class="d-flex align-items-center gap-3">
+                <img id="product-image-preview" class="d-none" style="width:64px;height:64px;object-fit:cover;border-radius:6px;" alt="" />
+                <input class="form-control" id="product-image-file" type="file" accept="image/png,image/jpeg,image/webp,image/gif" style="max-width:320px;" />
+                <span id="product-image-status" class="fs--1 d-none"></span>
+              </div>
+            </div>
+
+            <div class="col-12">
+              <label class="form-label fs--1 text-700 mb-1">Sizes &amp; prices (DH)</label>
+              <div id="size-rows"></div>
+              <button type="button" class="btn btn-sm btn-outline-secondary" id="add-size-row">+ Add size</button>
+            </div>
+
+            <div class="col-12">
+              <div class="form-check">
+                <input class="form-check-input" type="checkbox" id="product-available" checked />
+                <label class="form-check-label fs--1" for="product-available">Available for purchase</label>
+              </div>
+            </div>
+
+            <div class="col-12"><textarea class="form-control" id="product-blurb" placeholder="Short description" rows="2" required></textarea></div>
+            <div class="col-12">
+              <button class="btn btn-dark" type="submit">Save</button>
+              <button class="btn btn-outline-secondary" type="button" id="product-form-cancel">Cancel edit</button>
+              <div id="product-form-error" class="text-danger fs--1 mt-2 d-none"></div>
+            </div>
+          </form>
+        </section>
+
+        <section id="panel-commands" class="staff-panel d-none" data-panel="commands">
+          <div class="d-flex justify-content-between align-items-center mb-3">
+            <h4 class="mb-0">Commands</h4>
+            <select id="orders-status-filter" class="form-select form-select-sm" style="max-width:200px;">
+              <option value="">All statuses</option>
+              <option value="pending">Pending</option>
+              <option value="confirmed">Confirmed</option>
+              <option value="shipped">Shipped</option>
+              <option value="delivered">Delivered</option>
+              <option value="cancelled">Cancelled</option>
+            </select>
+          </div>
+          <div class="table-responsive">
+            <table class="table align-middle">
+              <thead>
+                <tr><th>Date</th><th>Customer</th><th>Address</th><th>Products</th><th>Notes</th><th>Total</th><th>Status</th></tr>
+              </thead>
+              <tbody id="orders-tbody"></tbody>
+            </table>
+          </div>
+        </section>
+
+      </main>
+    </div>
+
+    <script type="module" src="/src/staff-entry.ts"></script>
+  </body>
+
+</html>

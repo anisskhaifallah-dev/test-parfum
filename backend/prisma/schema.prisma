@@ -1,0 +1,111 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// Staff-only accounts. Customers never register or log in - they order via a guest
+// checkout form, and customer service confirms orders using one of these accounts.
+// role: 'admin' | 'agent'. Admins can create more staff accounts; agents cannot.
+model AdminUser {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  passwordHash String
+  name         String?
+  role         String   @default("agent")
+  createdAt    DateTime @default(now())
+}
+
+// gender: 'her' | 'him'  ·  family: Floral/Woody/Oriental/Fresh/Gourmand/Citrus
+// prices are whole-dirham (DH) amounts, matching the frontend catalog
+model Product {
+  id         String        @id
+  name       String
+  gender     String
+  family     String
+  image      String
+  blurb      String
+  available  Boolean       @default(true)
+  // Display position - lower shows first, both on its category page (For Her/For Him)
+  // and in the homepage teaser (which just takes the top 2 per gender). Staff reorder
+  // via up/down controls in the dashboard.
+  sortOrder  Int           @default(0)
+  sizes      ProductSize[]
+  packLinks  PackProduct[]
+  orderItems OrderItem[]
+}
+
+// Each product owns its own list of sizes - staff can add any custom size (any ml
+// amount, any price), not just a fixed 10ml/20ml/Full trio. ml === 0 means "Full Bottle".
+model ProductSize {
+  id        String  @id @default(cuid())
+  productId String
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  ml        Int
+  label     String
+  price     Int
+}
+
+model Pack {
+  id             String        @id
+  name           String
+  decantMl       Int
+  price          Int
+  compareAtPrice Int
+  blurb          String
+  image          String
+  products       PackProduct[]
+  orderItems     OrderItem[]
+}
+
+model PackProduct {
+  id        String  @id @default(cuid())
+  packId    String
+  pack      Pack    @relation(fields: [packId], references: [id])
+  productId String
+  product   Product @relation(fields: [productId], references: [id])
+}
+
+// Guest checkout: no customer account, so shipping info lives directly on the order
+// instead of a separate saved-address table.
+// status: 'pending' (awaiting customer service confirmation) | 'confirmed' | 'shipped' | 'delivered' | 'cancelled'
+model Order {
+  id            String      @id @default(cuid())
+  status        String      @default("pending")
+  paymentMethod String      @default("cod")
+  subtotal      Int
+  fullName      String
+  phone         String
+  line1         String
+  line2         String?
+  city          String
+  country       String
+  notes         String?
+  items         OrderItem[]
+  createdAt     DateTime    @default(now())
+}
+
+// kind: 'product' | 'pack'. Product lines carry ml (10/20/0=FullBottle); pack lines leave ml null.
+model OrderItem {
+  id           String   @id @default(cuid())
+  orderId      String
+  order        Order    @relation(fields: [orderId], references: [id])
+  kind         String
+  productId    String?
+  product      Product? @relation(fields: [productId], references: [id])
+  packId       String?
+  pack         Pack?    @relation(fields: [packId], references: [id])
+  nameSnapshot String
+  ml           Int?
+  qty          Int
+  unitPrice    Int
+}
+
+model NewsletterSignup {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  createdAt DateTime @default(now())
+}
