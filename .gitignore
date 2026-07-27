@@ -25,6 +25,7 @@
 *.log
 *.sql
 *.sqlite
+!backend/prisma/migrations/**/*.sql
 
 # OS generated files #
 ######################

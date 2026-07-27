@@ -1,7 +1,7 @@
 # YY Parfums — Backend
 
-Node.js + Express + Prisma. Local dev uses SQLite (zero setup); production on Railway
-switches to Postgres (see below).
+Node.js + Express + Prisma, backed by Postgres (same provider locally and on Railway —
+see below).
 
 ## How ordering actually works here
 
@@ -20,10 +20,14 @@ Dirham (DH) — the backend itself is currency-agnostic, it just stores integers
 ```
 cd backend
 npm install
-npx prisma migrate dev   # creates prisma/dev.db and applies the schema
+npx prisma migrate dev   # applies the schema to your local Postgres DB
 npm run seed              # loads the 4 products + 3 packs, plus one admin account
 npm run dev               # http://localhost:4000
 ```
+
+Set `DATABASE_URL` in `.env` to a local Postgres instance (e.g. `docker run -e
+POSTGRES_PASSWORD=postgres -p 5432:5432 postgres` and
+`postgresql://postgres:postgres@localhost:5432/postgres`) before running the above.
 
 `.env` is already created from `.env.example`. The seed script creates the first staff
 login from `ADMIN_EMAIL` / `ADMIN_PASSWORD` (defaults: `admin@yyparfums.com` /
@@ -62,8 +66,9 @@ Postgres is a config change, not a rewrite:
    ```
 3. Set `DATABASE_URL`, `JWT_SECRET`, `CORS_ORIGIN` (the deployed frontend origin), and
    `ADMIN_EMAIL`/`ADMIN_PASSWORD` as Railway environment variables.
-4. Build/start commands for the Railway service: `npm run build` then
-   `npx prisma migrate deploy && npm start`.
+4. Build/start commands for the Railway service: `npm run build` then `npm start` —
+   `start` already runs `prisma migrate deploy` before launching the server, and
+   `postinstall` runs `prisma generate`, so no custom Railway start command is needed.
 5. Run `npm run seed` once against the Railway database (or via a Railway one-off command)
    to load the catalog and create the first admin account.
 6. **Uploaded images (`/uploads`)**: Railway's filesystem is ephemeral by default — files
