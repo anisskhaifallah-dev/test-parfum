@@ -65,9 +65,11 @@ All routes are prefixed `/api`.
 2. Set `DATABASE_URL` (the Atlas connection string), `JWT_SECRET`, `CORS_ORIGIN` (the
    deployed frontend origin), and `ADMIN_EMAIL`/`ADMIN_PASSWORD` as Railway environment
    variables on the backend service.
-3. Build/start commands for the Railway service: `npm run build` then `npm start` —
-   `start` already runs `prisma db push` before launching the server, and `postinstall`
-   runs `prisma generate`, so no custom Railway start command is needed.
+3. Railway service settings: Build command stays default (`npm run build`, and
+   `postinstall` already runs `prisma generate`). Set **Pre-Deploy Command** to
+   `npx prisma db push --accept-data-loss --skip-generate` (runs once per deploy, before
+   traffic switches over) and leave **Custom Start Command** blank so it defaults to
+   `npm start`.
 4. Run `npm run seed` once against the Atlas database (or via a Railway one-off command)
    to load the catalog and create the first admin account.
 5. **Uploaded images (`/uploads`)**: Railway's filesystem is ephemeral by default — files
