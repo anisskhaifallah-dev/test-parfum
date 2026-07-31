@@ -29,10 +29,12 @@ model Product {
   image      String
   blurb      String
   available  Boolean       @default(true)
-  // Display position - lower shows first, both on its category page (For Her/For Him)
-  // and in the homepage teaser (which just takes the top 2 per gender). Staff reorder
-  // via up/down controls in the dashboard.
+  // Display position on its category page (For Her/For Him) - lower shows first. Staff
+  // reorder via up/down controls in the dashboard.
   sortOrder  Int           @default(0)
+  // Explicitly chosen by staff to appear in the homepage "For Her"/"For Him" teaser -
+  // independent of sortOrder, which only affects the category page ordering.
+  featured   Boolean       @default(false)
   sizes      ProductSize[]
   packLinks  PackProduct[]
   orderItems OrderItem[]
@@ -57,6 +59,9 @@ model Pack {
   compareAtPrice Int
   blurb          String
   image          String
+  // Staff toggle for whether this pack shows in the homepage's Packs section - the
+  // dedicated packs.html page always lists every pack regardless of this flag.
+  showOnHomepage Boolean       @default(true)
   products       PackProduct[]
   orderItems     OrderItem[]
 }

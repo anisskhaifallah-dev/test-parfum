@@ -20,6 +20,6 @@ function renderHomePackCard(pack: Pack): string {
 export function initHomePacks(): void {
   const container = document.getElementById('home-packs-grid');
   if (!container) return;
-  container.innerHTML = getAllPacks().map(renderHomePackCard).join('');
+  container.innerHTML = getAllPacks().filter((p) => p.showOnHomepage).map(renderHomePackCard).join('');
   wirePackButtons(container);
 }

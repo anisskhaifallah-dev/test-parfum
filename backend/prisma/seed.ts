@@ -99,6 +99,9 @@ async function main() {
         image: p.image,
         blurb: p.blurb,
         sortOrder: index,
+        // Only the first 2 products of each gender in this seed list start featured, so
+        // a fresh install still has a populated homepage teaser out of the box.
+        featured: PRODUCTS.filter((x) => x.gender === p.gender).indexOf(p) < 2,
         sizes: { create: sizes },
       },
       update: {
@@ -107,8 +110,9 @@ async function main() {
         family: p.family,
         image: p.image,
         blurb: p.blurb,
-        // sortOrder deliberately left out of the update branch - staff may have
-        // already reordered products in the dashboard, re-seeding shouldn't reset that.
+        // sortOrder and featured deliberately left out of the update branch - staff may
+        // have already reordered/curated these in the dashboard, re-seeding shouldn't
+        // reset that.
       },
     });
 

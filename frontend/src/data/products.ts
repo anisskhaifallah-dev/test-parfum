@@ -18,6 +18,7 @@ export interface Product {
   image: string;
   blurb: string;
   available: boolean;
+  featured: boolean;
   sizes: ProductSize[];
 }
 
@@ -30,6 +31,7 @@ export interface Pack {
   compareAtPrice: number;
   blurb: string;
   image: string;
+  showOnHomepage: boolean;
 }
 
 export const NOTES_BY_FAMILY: Record<Family, { top: string[]; heart: string[]; base: string[] }> = {

@@ -17,12 +17,13 @@ function renderFeaturedCard(p: Product): string {
   `;
 }
 
-// The homepage teaser just shows the top 2 (by sortOrder) products of each gender -
-// the same order staff control from the dashboard drives both this and the category pages.
+// Shows whichever products of this gender staff explicitly marked as featured (from the
+// Homepage tab in the dashboard) - independent of sortOrder, which only affects the
+// category page ordering.
 function renderTeaser(gender: Gender, containerId: string): void {
   const container = document.getElementById(containerId);
   if (!container) return;
-  container.innerHTML = getByGender(gender).slice(0, 2).map(renderFeaturedCard).join('');
+  container.innerHTML = getByGender(gender).filter((p) => p.featured).map(renderFeaturedCard).join('');
 }
 
 export function initHomeFeatured(): void {

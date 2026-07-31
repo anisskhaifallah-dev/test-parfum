@@ -35,6 +35,7 @@ function toProductDTO(p: {
   blurb: string;
   available: boolean;
   sortOrder: number;
+  featured: boolean;
   sizes: SizeDTO[];
 }) {
   return {
@@ -46,6 +47,7 @@ function toProductDTO(p: {
     blurb: p.blurb,
     available: p.available,
     sortOrder: p.sortOrder,
+    featured: p.featured,
     sizes: sortSizes(p.sizes),
   };
 }
@@ -98,7 +100,7 @@ productsRouter.post(
   '/',
   requireAuth,
   asyncHandler(async (req, res) => {
-    const { name, gender, family, image, blurb, sizes, available, sortOrder } = req.body as {
+    const { name, gender, family, image, blurb, sizes, available, sortOrder, featured } = req.body as {
       name?: string;
       gender?: string;
       family?: string;
@@ -107,6 +109,7 @@ productsRouter.post(
       sizes?: unknown;
       available?: boolean;
       sortOrder?: number;
+      featured?: boolean;
     };
 
     if (!name) throw new HttpError(400, 'name is required');
@@ -143,6 +146,7 @@ productsRouter.post(
         blurb,
         available: available ?? true,
         sortOrder: resolvedSortOrder,
+        featured: featured ?? false,
         sizes: { create: parsedSizes },
       },
       include: { sizes: true },
@@ -158,7 +162,7 @@ productsRouter.patch(
     const existing = await prisma.product.findUnique({ where: { id: req.params.id } });
     if (!existing) throw new HttpError(404, 'Product not found');
 
-    const { name, gender, family, image, blurb, sizes, available, sortOrder } = req.body as {
+    const { name, gender, family, image, blurb, sizes, available, sortOrder, featured } = req.body as {
       name?: string;
       gender?: string;
       family?: string;
@@ -167,6 +171,7 @@ productsRouter.patch(
       sizes?: unknown;
       available?: boolean;
       sortOrder?: number;
+      featured?: boolean;
     };
     if (gender !== undefined && !GENDERS.includes(gender)) {
       throw new HttpError(400, `gender must be one of: ${GENDERS.join(', ')}`);
@@ -190,6 +195,7 @@ productsRouter.patch(
           blurb,
           available,
           sortOrder,
+          featured,
           ...(parsedSizes ? { sizes: { create: parsedSizes } } : {}),
         },
         include: { sizes: true },
@@ -228,6 +234,7 @@ function toPackDTO(pack: {
   compareAtPrice: number;
   blurb: string;
   image: string;
+  showOnHomepage: boolean;
 }) {
   return {
     id: pack.id,
@@ -238,7 +245,19 @@ function toPackDTO(pack: {
     compareAtPrice: pack.compareAtPrice,
     blurb: pack.blurb,
     image: pack.image,
+    showOnHomepage: pack.showOnHomepage,
   };
+}
+
+// Throws if any id isn't a real product, or the list is empty/malformed.
+async function validateProductIds(productIds: unknown): Promise<string[]> {
+  if (!Array.isArray(productIds) || productIds.length === 0 || productIds.some((id) => typeof id !== 'string')) {
+    throw new HttpError(400, 'productIds must be a non-empty array of strings');
+  }
+  const uniqueProductIds = [...new Set(productIds)];
+  const foundCount = await prisma.product.count({ where: { id: { in: uniqueProductIds } } });
+  if (foundCount !== uniqueProductIds.length) throw new HttpError(400, 'One or more productIds do not exist');
+  return uniqueProductIds;
 }
 
 packsRouter.get(
@@ -249,8 +268,54 @@ packsRouter.get(
   })
 );
 
-// Staff-only: pick which existing products this pack bundles. Full pack CRUD
-// (name/price/etc) isn't needed yet - the 3 packs are fixed, only their contents change.
+// Everything below is staff-only - the storefront only ever calls the GET above.
+packsRouter.post(
+  '/',
+  requireAuth,
+  asyncHandler(async (req, res) => {
+    const { name, decantMl, price, compareAtPrice, blurb, image, productIds, showOnHomepage } = req.body as {
+      name?: string;
+      decantMl?: number;
+      price?: number;
+      compareAtPrice?: number;
+      blurb?: string;
+      image?: string;
+      productIds?: unknown;
+      showOnHomepage?: boolean;
+    };
+
+    if (!name) throw new HttpError(400, 'name is required');
+    if (typeof decantMl !== 'number' || !Number.isInteger(decantMl) || decantMl <= 0) {
+      throw new HttpError(400, 'decantMl must be a whole number greater than 0');
+    }
+    if (typeof price !== 'number' || price <= 0) throw new HttpError(400, 'price must be greater than 0');
+    if (typeof compareAtPrice !== 'number' || compareAtPrice <= 0) throw new HttpError(400, 'compareAtPrice must be greater than 0');
+    if (!blurb) throw new HttpError(400, 'blurb is required');
+    if (!image) throw new HttpError(400, 'image is required');
+    const uniqueProductIds = await validateProductIds(productIds);
+
+    const base = slugify(name);
+    if (!base) throw new HttpError(400, 'name must contain at least one letter or number');
+    let id = base;
+    let suffix = 1;
+    // eslint-disable-next-line no-await-in-loop
+    while (await prisma.pack.findUnique({ where: { id } })) {
+      suffix += 1;
+      id = `${base}-${suffix}`;
+    }
+
+    const pack = await prisma.$transaction(async (tx) => {
+      await tx.pack.create({
+        data: { id, name, decantMl, price, compareAtPrice, blurb, image, showOnHomepage: showOnHomepage ?? true },
+      });
+      await tx.packProduct.createMany({ data: uniqueProductIds.map((productId) => ({ packId: id, productId })) });
+      return tx.pack.findUniqueOrThrow({ where: { id }, include: { products: { include: { product: true } } } });
+    });
+
+    res.status(201).json(toPackDTO(pack));
+  })
+);
+
 packsRouter.patch(
   '/:id',
   requireAuth,
@@ -258,19 +323,35 @@ packsRouter.patch(
     const existing = await prisma.pack.findUnique({ where: { id: req.params.id } });
     if (!existing) throw new HttpError(404, 'Pack not found');
 
-    const { productIds } = req.body as { productIds?: unknown };
-    if (!Array.isArray(productIds) || productIds.length === 0 || productIds.some((id) => typeof id !== 'string')) {
-      throw new HttpError(400, 'productIds must be a non-empty array of strings');
+    const { name, decantMl, price, compareAtPrice, blurb, image, productIds, showOnHomepage } = req.body as {
+      name?: string;
+      decantMl?: number;
+      price?: number;
+      compareAtPrice?: number;
+      blurb?: string;
+      image?: string;
+      productIds?: unknown;
+      showOnHomepage?: boolean;
+    };
+    if (decantMl !== undefined && (!Number.isInteger(decantMl) || decantMl <= 0)) {
+      throw new HttpError(400, 'decantMl must be a whole number greater than 0');
     }
-    const uniqueProductIds = [...new Set(productIds)];
-
-    const foundCount = await prisma.product.count({ where: { id: { in: uniqueProductIds } } });
-    if (foundCount !== uniqueProductIds.length) throw new HttpError(400, 'One or more productIds do not exist');
+    if (price !== undefined && (typeof price !== 'number' || price <= 0)) throw new HttpError(400, 'price must be greater than 0');
+    if (compareAtPrice !== undefined && (typeof compareAtPrice !== 'number' || compareAtPrice <= 0)) {
+      throw new HttpError(400, 'compareAtPrice must be greater than 0');
+    }
+    const uniqueProductIds = productIds !== undefined ? await validateProductIds(productIds) : undefined;
 
     const pack = await prisma.$transaction(async (tx) => {
-      await tx.packProduct.deleteMany({ where: { packId: req.params.id } });
-      await tx.packProduct.createMany({
-        data: uniqueProductIds.map((productId) => ({ packId: req.params.id, productId })),
+      if (uniqueProductIds) {
+        await tx.packProduct.deleteMany({ where: { packId: req.params.id } });
+        await tx.packProduct.createMany({
+          data: uniqueProductIds.map((productId) => ({ packId: req.params.id, productId })),
+        });
+      }
+      await tx.pack.update({
+        where: { id: req.params.id },
+        data: { name, decantMl, price, compareAtPrice, blurb, image, showOnHomepage },
       });
       return tx.pack.findUniqueOrThrow({
         where: { id: req.params.id },
@@ -279,5 +360,21 @@ packsRouter.patch(
     });
 
     res.json(toPackDTO(pack));
+  })
+);
+
+packsRouter.delete(
+  '/:id',
+  requireAuth,
+  asyncHandler(async (req, res) => {
+    const existing = await prisma.pack.findUnique({ where: { id: req.params.id } });
+    if (!existing) throw new HttpError(404, 'Pack not found');
+
+    const usedInOrder = await prisma.orderItem.findFirst({ where: { packId: req.params.id } });
+    if (usedInOrder) throw new HttpError(409, 'Cannot delete: this pack appears in past orders.');
+
+    await prisma.packProduct.deleteMany({ where: { packId: req.params.id } });
+    await prisma.pack.delete({ where: { id: req.params.id } });
+    res.json({ ok: true });
   })
 );
