@@ -51,17 +51,23 @@ All routes are prefixed `/api`.
 - `GET /orders`, `GET /orders/:id` — `?status=pending|confirmed|shipped|delivered|cancelled` filter supported on the list
 - `PATCH /orders/:id` — `{ status }`, moves an order through pending → confirmed → shipped → delivered (or cancelled)
 
-## Order notification emails
+## Order notifications
 
-Every `POST /orders` sends a plain-text email (customer info, address, items, subtotal)
-via `backend/src/lib/mailer.ts`. It's entirely optional: if `SMTP_HOST` / `SMTP_USER` /
-`SMTP_PASSWORD` / `NOTIFY_EMAIL` aren't all set, sending is skipped (logged, not an error)
-and checkout still works normally - a broken/unconfigured mail server never blocks an
-order. See `.env.example` for the exact variable names.
+Every `POST /orders` pushes a notification (customer info, address, items, subtotal) via
+`backend/src/lib/notify.ts`, using [ntfy.sh](https://ntfy.sh) - a plain HTTPS POST, not
+email. It's entirely optional: if `NTFY_TOPIC` isn't set, sending is skipped (logged, not
+an error) and checkout still works normally. Set `NTFY_TOPIC` to a random, hard-to-guess
+string (anyone who knows it can read or post to it on the public ntfy.sh server), then
+subscribe to that same topic in the [ntfy app](https://ntfy.sh/app) to get the
+notification on your phone.
 
-To use an existing mailbox (e.g. `support@yyparfum.com` from your domain host), find its
-SMTP host/port in your host's control panel or the welcome email sent when the mailbox
-was created - `SMTP_USER`/`SMTP_PASSWORD` are that mailbox's login and password.
+**Why not email?** Railway blocks outbound SMTP (ports 465/587/2525) on every plan below
+Pro - `backend/src/lib/mailer.ts` still exists (SMTP-based, sends to a mailbox like
+`support@yyparfum.com`) but can't connect from Railway's Hobby tier. To switch back to
+email: upgrade the Railway service to Pro, or move sending through something whose
+network isn't SMTP-restricted (an HTTPS email API like Resend, or a serverless function
+on a host that allows outbound SMTP), then swap the import in
+`backend/src/routes/orders.routes.ts` from `notify.js` back to `mailer.js`.
 
 ## Deploying to Railway (Postgres)
 
@@ -71,8 +77,8 @@ was created - `SMTP_USER`/`SMTP_PASSWORD` are that mailbox's login and password.
    connection string by hand.
 2. Set `JWT_SECRET`, `CORS_ORIGIN` (the deployed frontend origin, **no trailing slash** —
    CORS origin matching is exact), `ADMIN_EMAIL`/`ADMIN_PASSWORD`, and (optional, for
-   order notification emails - see below) `SMTP_HOST`/`SMTP_PORT`/`SMTP_USER`/
-   `SMTP_PASSWORD`/`NOTIFY_EMAIL` as Railway environment variables on the backend service.
+   order notifications - see below) `NTFY_TOPIC` as Railway environment variables on the
+   backend service.
 3. Railway service settings: **Root Directory** must be `backend` (this is a monorepo —
    without this, Railway's builder scans the repo root and can't detect a Node app at
    all). Build command stays default (`npm run build`, and `postinstall` already runs

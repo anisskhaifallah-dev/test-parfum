@@ -3,7 +3,7 @@ import { prisma } from '../lib/prisma.js';
 import { requireAuth } from '../middleware/auth.js';
 import { asyncHandler, HttpError } from '../middleware/error.js';
 import { unitPriceForMl } from '../lib/pricing.js';
-import { sendNewOrderNotification } from '../lib/mailer.js';
+import { sendNewOrderNotification } from '../lib/notify.js';
 
 export const ordersRouter = Router();
 
