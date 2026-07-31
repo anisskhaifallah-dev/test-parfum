@@ -1,20 +1,15 @@
-import crypto from 'node:crypto';
-import fs from 'node:fs';
-import path from 'node:path';
 import { Router } from 'express';
 import multer from 'multer';
 import sharp from 'sharp';
+import { prisma } from '../lib/prisma.js';
 import { requireAuth } from '../middleware/auth.js';
-import { HttpError } from '../middleware/error.js';
-
-export const uploadsDir = path.resolve(process.cwd(), 'uploads');
-fs.mkdirSync(uploadsDir, { recursive: true });
+import { asyncHandler, HttpError } from '../middleware/error.js';
 
 const ALLOWED_MIME = /^image\/(png|jpe?g|webp|gif)$/;
 
-// Buffered in memory rather than written to disk as-is, so it can be normalized by
-// sharp first - staff upload whatever they have (a phone photo, any orientation, any
-// size), and every product image ends up a consistently-sized webp either way.
+// Buffered in memory rather than written to disk, so it can be normalized by sharp first -
+// staff upload whatever they have (a phone photo, any orientation, any size), and every
+// product image ends up a consistently-sized webp either way.
 const upload = multer({
   storage: multer.memoryStorage(),
   limits: { fileSize: 5 * 1024 * 1024 },
@@ -51,13 +46,29 @@ uploadsRouter.post('/', requireAuth, (req, res, next) => {
         .webp({ quality: 82 })
         .toBuffer();
 
-      const filename = `${crypto.randomUUID()}.webp`;
-      await fs.promises.writeFile(path.join(uploadsDir, filename), processed);
+      const image = await prisma.image.create({ data: { data: processed, mimeType: 'image/webp' } });
 
-      const url = `${req.protocol}://${req.get('host')}/uploads/${filename}`;
+      const url = `${req.protocol}://${req.get('host')}/api/uploads/${image.id}`;
       res.status(201).json({ url });
     } catch (procErr) {
       next(new HttpError(400, procErr instanceof Error ? procErr.message : 'Could not process image'));
     }
   });
 });
+
+// Public - product/pack images are shown on the storefront, no auth needed to view them.
+uploadsRouter.get(
+  '/:id',
+  asyncHandler(async (req, res) => {
+    const image = await prisma.image.findUnique({ where: { id: req.params.id } });
+    if (!image) {
+      res.status(404).end();
+      return;
+    }
+    res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+    res.setHeader('Content-Type', image.mimeType);
+    // Prisma returns Bytes fields as a plain Uint8Array, not a real Buffer instance -
+    // res.send() only recognizes an actual Buffer as binary, otherwise it JSON-serializes it.
+    res.send(Buffer.from(image.data));
+  })
+);

@@ -68,11 +68,9 @@ All routes are prefixed `/api`.
    switches over — applies the schema, loads the catalog, and creates the first admin
    account; both are idempotent, safe to run on every deploy) and leave **Custom Start
    Command** blank so it defaults to `npm start`.
-4. **Uploaded images (`/uploads`)**: Railway's filesystem is ephemeral by default — files
-   written to `uploads/` disappear on every redeploy/restart. Attach a
-   [Railway volume](https://docs.railway.com/guides/volumes) mounted at the backend's
-   `uploads` directory before staff start uploading real product photos, or images will
-   randomly vanish.
+4. **Uploaded images** are stored directly in Postgres (the `Image` table), not on local
+   disk, specifically because Railway's filesystem is ephemeral - no volume needed, and
+   images survive redeploys/restarts.
 
 ## Scaling this project
 
@@ -84,11 +82,11 @@ the store outgrows what it runs on today. Roughly the order you'd hit these in:
    today's order volume, but doesn't scale past a few thousand orders per range. Replace
    it with indexed SQL `GROUP BY` aggregate queries, or a scheduled daily rollup table,
    instead of loading every matching row per request.
-2. **Uploaded images on local disk** — fine for one instance with a Railway volume
-   attached (see above). If you outgrow a single instance, or want a CDN in front of
-   product photos, move to object storage (S3, Cloudinary, Railway bucket storage) and
-   keep storing the returned URL exactly like `image` is stored today — it's already just
-   a URL string, no schema change needed.
+2. **Uploaded images in Postgres** — fine at today's catalog size, but every image
+   request round-trips through the database and there's no CDN/edge caching. If the
+   catalog grows large or traffic gets heavy, move to object storage (S3, Cloudinary,
+   Railway bucket storage) - the `image` field on Product/Pack is already just a URL
+   string, so this only means changing the upload route, not the schema.
 3. **Single Express instance** — this scales horizontally (multiple instances behind a
    load balancer) since nothing here holds in-memory state between requests other than
    the `JWT_SECRET`, which is already a shared env var.

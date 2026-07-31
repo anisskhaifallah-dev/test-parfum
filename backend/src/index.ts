@@ -5,7 +5,7 @@ import { authRouter } from './routes/auth.routes.js';
 import { productsRouter, packsRouter } from './routes/products.routes.js';
 import { ordersRouter } from './routes/orders.routes.js';
 import { newsletterRouter } from './routes/newsletter.routes.js';
-import { uploadsRouter, uploadsDir } from './routes/uploads.routes.js';
+import { uploadsRouter } from './routes/uploads.routes.js';
 import { analyticsRouter } from './routes/analytics.routes.js';
 import { errorHandler } from './middleware/error.js';
 
@@ -28,7 +28,6 @@ app.use(
   })
 );
 app.use(express.json());
-app.use('/uploads', express.static(uploadsDir));
 
 app.get('/api/health', (_req, res) => res.json({ ok: true }));
 

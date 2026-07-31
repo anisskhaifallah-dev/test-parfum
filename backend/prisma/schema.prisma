@@ -114,3 +114,14 @@ model NewsletterSignup {
   email     String   @unique
   createdAt DateTime @default(now())
 }
+
+// Staff-uploaded product/pack photos, stored directly in Postgres (not on local disk) so
+// they survive Railway redeploys without needing a persistent volume. Fine at this
+// project's scale; revisit with object storage (S3/Cloudinary) if the catalog grows large
+// or traffic gets heavy, since every image request currently round-trips through Postgres.
+model Image {
+  id        String   @id @default(cuid())
+  data      Bytes
+  mimeType  String
+  createdAt DateTime @default(now())
+}
