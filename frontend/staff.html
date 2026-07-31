@@ -31,6 +31,7 @@
           <button type="button" class="staff-nav-link active" data-panel="dashboard">Dashboard</button>
           <button type="button" class="staff-nav-link" data-panel="catalogs">Catalogs</button>
           <button type="button" class="staff-nav-link" data-panel="commands">Commands</button>
+          <button type="button" class="staff-nav-link" data-panel="homepage">Homepage</button>
         </nav>
         <div class="staff-sidebar-footer">
           <span id="staff-who" class="d-block fs--1 mb-2"></span>
@@ -220,6 +221,17 @@
               <tbody id="orders-tbody"></tbody>
             </table>
           </div>
+        </section>
+
+        <section id="panel-homepage" class="staff-panel d-none" data-panel="homepage">
+          <h4 class="mb-2">Homepage</h4>
+          <p class="text-700 fs--1 mb-4">
+            "For Her" / "For Him" on the homepage always show the top 2 products of each gender -
+            reorder them from the <strong>Catalogs</strong> tab to change which ones appear.
+          </p>
+          <h5 class="mb-3">Packs</h5>
+          <p class="text-700 fs--1 mb-3">Choose which existing products each pack bundles.</p>
+          <div id="homepage-packs"></div>
         </section>
 
       </main>

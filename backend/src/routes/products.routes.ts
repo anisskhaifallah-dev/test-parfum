@@ -219,21 +219,65 @@ productsRouter.delete(
 
 export const packsRouter = Router();
 
+function toPackDTO(pack: {
+  id: string;
+  name: string;
+  products: { productId: string }[];
+  decantMl: number;
+  price: number;
+  compareAtPrice: number;
+  blurb: string;
+  image: string;
+}) {
+  return {
+    id: pack.id,
+    name: pack.name,
+    productIds: pack.products.map((link) => link.productId),
+    decantMl: pack.decantMl,
+    price: pack.price,
+    compareAtPrice: pack.compareAtPrice,
+    blurb: pack.blurb,
+    image: pack.image,
+  };
+}
+
 packsRouter.get(
   '/',
   asyncHandler(async (_req, res) => {
     const packs = await prisma.pack.findMany({ include: { products: { include: { product: true } } } });
-    res.json(
-      packs.map((pack) => ({
-        id: pack.id,
-        name: pack.name,
-        productIds: pack.products.map((link) => link.productId),
-        decantMl: pack.decantMl,
-        price: pack.price,
-        compareAtPrice: pack.compareAtPrice,
-        blurb: pack.blurb,
-        image: pack.image,
-      }))
-    );
+    res.json(packs.map(toPackDTO));
+  })
+);
+
+// Staff-only: pick which existing products this pack bundles. Full pack CRUD
+// (name/price/etc) isn't needed yet - the 3 packs are fixed, only their contents change.
+packsRouter.patch(
+  '/:id',
+  requireAuth,
+  asyncHandler(async (req, res) => {
+    const existing = await prisma.pack.findUnique({ where: { id: req.params.id } });
+    if (!existing) throw new HttpError(404, 'Pack not found');
+
+    const { productIds } = req.body as { productIds?: unknown };
+    if (!Array.isArray(productIds) || productIds.length === 0 || productIds.some((id) => typeof id !== 'string')) {
+      throw new HttpError(400, 'productIds must be a non-empty array of strings');
+    }
+    const uniqueProductIds = [...new Set(productIds)];
+
+    const foundCount = await prisma.product.count({ where: { id: { in: uniqueProductIds } } });
+    if (foundCount !== uniqueProductIds.length) throw new HttpError(400, 'One or more productIds do not exist');
+
+    const pack = await prisma.$transaction(async (tx) => {
+      await tx.packProduct.deleteMany({ where: { packId: req.params.id } });
+      await tx.packProduct.createMany({
+        data: uniqueProductIds.map((productId) => ({ packId: req.params.id, productId })),
+      });
+      return tx.pack.findUniqueOrThrow({
+        where: { id: req.params.id },
+        include: { products: { include: { product: true } } },
+      });
+    });
+
+    res.json(toPackDTO(pack));
   })
 );

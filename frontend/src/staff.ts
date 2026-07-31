@@ -86,6 +86,7 @@ function showDashboard(): void {
 }
 
 let analyticsLoaded = false;
+let homepagePanelLoaded = false;
 
 function showPanel(name: string): void {
   document.querySelectorAll<HTMLElement>('.staff-panel').forEach((el) => {
@@ -98,6 +99,10 @@ function showPanel(name: string): void {
   if (name === 'dashboard' && !analyticsLoaded) {
     analyticsLoaded = true;
     void import('./analytics').then((mod) => mod.initAnalytics());
+  }
+  if (name === 'homepage' && !homepagePanelLoaded) {
+    homepagePanelLoaded = true;
+    void import('./staff-homepage').then((mod) => mod.initHomepagePanel());
   }
 }
 
