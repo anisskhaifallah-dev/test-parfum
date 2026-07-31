@@ -11,7 +11,22 @@ import { errorHandler } from './middleware/error.js';
 
 const app = express();
 
-app.use(cors({ origin: process.env.CORS_ORIGIN ?? 'http://localhost:5173' }));
+// Comma-separated list, e.g. "https://www.yyparfum.com,https://yyparfum.com" - lets the
+// storefront be reachable at more than one domain (custom domain + www + Vercel default)
+// without needing a code change every time a domain is added.
+const allowedOrigins = (process.env.CORS_ORIGIN ?? 'http://localhost:5173').split(',').map((o) => o.trim());
+
+app.use(
+  cors({
+    origin(origin, callback) {
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error('Not allowed by CORS'));
+      }
+    },
+  })
+);
 app.use(express.json());
 app.use('/uploads', express.static(uploadsDir));
 

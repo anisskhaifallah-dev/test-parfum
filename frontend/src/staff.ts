@@ -455,6 +455,13 @@ async function tryResume(): Promise<void> {
 export function initStaffPage(): void {
   document.getElementById('login-form')!.addEventListener('submit', handleLogin);
   document.getElementById('logout-btn')!.addEventListener('click', handleLogout);
+  document.getElementById('login-password-toggle')!.addEventListener('click', () => {
+    const input = document.getElementById('login-password') as HTMLInputElement;
+    const btn = document.getElementById('login-password-toggle') as HTMLButtonElement;
+    const showing = input.type === 'text';
+    input.type = showing ? 'password' : 'text';
+    btn.textContent = showing ? 'Show' : 'Hide';
+  });
   document.querySelectorAll<HTMLButtonElement>('.staff-nav-link').forEach((btn) => {
     btn.addEventListener('click', () => showPanel(btn.dataset.panel as string));
   });

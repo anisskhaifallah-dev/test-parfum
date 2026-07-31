@@ -18,7 +18,10 @@
       <h1 class="fw-normal mb-4 text-center">YY Parfums &mdash; Staff</h1>
       <form id="login-form">
         <div class="mb-2"><input class="form-control" id="login-email" type="email" placeholder="Email" required /></div>
-        <div class="mb-2"><input class="form-control" id="login-password" type="password" placeholder="Password" required /></div>
+        <div class="mb-2 input-group">
+          <input class="form-control" id="login-password" type="password" placeholder="Password" required />
+          <button class="btn btn-outline-secondary" type="button" id="login-password-toggle">Show</button>
+        </div>
         <div id="login-error" class="text-danger fs--1 mb-2 d-none"></div>
         <button class="btn btn-dark w-100" type="submit">Log in</button>
       </form>
