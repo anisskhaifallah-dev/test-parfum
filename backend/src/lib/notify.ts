@@ -19,46 +19,45 @@ interface OrderForNotify {
   items: OrderItemForNotify[];
 }
 
-const { NTFY_TOPIC } = process.env;
+const { TELEGRAM_BOT_TOKEN, TELEGRAM_CHAT_ID } = process.env;
 
 function formatItem(item: OrderItemForNotify): string {
   const size = item.kind === 'product' && item.ml != null ? (item.ml === 0 ? ' (Full Bottle)' : ` (${item.ml}ml)`) : '';
   return `${item.qty}x ${item.nameSnapshot}${size}`;
 }
 
-// Fire-and-forget from the caller's perspective - a broken/unconfigured topic should
-// never cause a customer's checkout to fail, so this only ever logs on failure.
-// Push notification via ntfy.sh (https://ntfy.sh/docs) instead of email - Railway blocks
-// outbound SMTP on non-Pro plans, but this is a plain HTTPS POST, which isn't blocked.
+// Fire-and-forget from the caller's perspective - a broken/unconfigured bot should never
+// cause a customer's checkout to fail, so this only ever logs on failure.
+// Telegram Bot API instead of email - Railway blocks outbound SMTP on non-Pro plans, and
+// even ntfy.sh (a plain HTTPS POST) turned out to be IP-blocked from Railway's shared
+// egress range. Telegram's API is confirmed reachable from Railway.
 export async function sendNewOrderNotification(order: OrderForNotify): Promise<void> {
-  if (!NTFY_TOPIC) {
-    console.warn('NTFY_TOPIC not configured - skipping order notification.');
+  if (!TELEGRAM_BOT_TOKEN || !TELEGRAM_CHAT_ID) {
+    console.warn('TELEGRAM_BOT_TOKEN/TELEGRAM_CHAT_ID not configured - skipping order notification.');
     return;
   }
 
   const address = [order.line1, order.line2, order.city, order.country].filter(Boolean).join(', ');
-  const body = [
+  const text = [
+    `New order - ${order.subtotal} DH`,
+    '',
     `${order.fullName} (${order.phone})`,
     address,
     order.notes ? `Notes: ${order.notes}` : null,
     '',
-    order.items.map(formatItem).join(', '),
+    order.items.map(formatItem).join('\n'),
   ]
     .filter((line) => line !== null)
     .join('\n');
 
   try {
-    const res = await fetch(`https://ntfy.sh/${NTFY_TOPIC}`, {
+    const res = await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
       method: 'POST',
-      body,
-      headers: {
-        Title: `New order - ${order.subtotal} DH`,
-        Tags: 'shopping_cart',
-        Priority: 'high',
-      },
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ chat_id: TELEGRAM_CHAT_ID, text }),
     });
-    if (!res.ok) throw new Error(`ntfy responded ${res.status}`);
+    if (!res.ok) throw new Error(`Telegram API responded ${res.status}: ${await res.text()}`);
   } catch (err) {
-    console.error('Failed to send order push notification', err);
+    console.error('Failed to send order Telegram notification', err);
   }
 }

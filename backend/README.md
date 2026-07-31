@@ -53,20 +53,21 @@ All routes are prefixed `/api`.
 
 ## Order notifications
 
-Every `POST /orders` pushes a notification (customer info, address, items, subtotal) via
-`backend/src/lib/notify.ts`, using [ntfy.sh](https://ntfy.sh) - a plain HTTPS POST, not
-email. It's entirely optional: if `NTFY_TOPIC` isn't set, sending is skipped (logged, not
-an error) and checkout still works normally. Set `NTFY_TOPIC` to a random, hard-to-guess
-string (anyone who knows it can read or post to it on the public ntfy.sh server), then
-subscribe to that same topic in the [ntfy app](https://ntfy.sh/app) to get the
-notification on your phone.
+Every `POST /orders` sends a Telegram message (customer info, address, items, subtotal)
+via `backend/src/lib/notify.ts`. It's entirely optional: if `TELEGRAM_BOT_TOKEN` /
+`TELEGRAM_CHAT_ID` aren't set, sending is skipped (logged, not an error) and checkout
+still works normally. See `.env.example` for how to create a bot and find your chat ID.
 
-**Why not email?** Railway blocks outbound SMTP (ports 465/587/2525) on every plan below
-Pro - `backend/src/lib/mailer.ts` still exists (SMTP-based, sends to a mailbox like
-`support@yyparfum.com`) but can't connect from Railway's Hobby tier. To switch back to
-email: upgrade the Railway service to Pro, or move sending through something whose
-network isn't SMTP-restricted (an HTTPS email API like Resend, or a serverless function
-on a host that allows outbound SMTP), then swap the import in
+**Why not email, or ntfy.sh?** Railway blocks outbound SMTP (ports 465/587/2525) on every
+plan below Pro - `backend/src/lib/mailer.ts` still exists (SMTP-based, sends to a mailbox
+like `support@yyparfum.com`) but can't connect from Railway's Hobby tier. ntfy.sh (a plain
+HTTPS POST, no SMTP involved) was tried next, but Railway's shared egress IP is itself
+blocklisted by ntfy.sh (confirmed: `api.ipify.org` and `api.github.com` both work fine
+from the same deployment, `ntfy.sh` alone times out) - likely from other Railway users'
+past abuse of that free service, unrelated to this project. Telegram and Discord's APIs
+were both confirmed reachable, which is why Telegram was picked. To switch to email:
+upgrade the Railway service to Pro (unblocks SMTP), or move sending through something
+whose network isn't SMTP-restricted, then swap the import in
 `backend/src/routes/orders.routes.ts` from `notify.js` back to `mailer.js`.
 
 ## Deploying to Railway (Postgres)
@@ -77,8 +78,8 @@ on a host that allows outbound SMTP), then swap the import in
    connection string by hand.
 2. Set `JWT_SECRET`, `CORS_ORIGIN` (the deployed frontend origin, **no trailing slash** —
    CORS origin matching is exact), `ADMIN_EMAIL`/`ADMIN_PASSWORD`, and (optional, for
-   order notifications - see below) `NTFY_TOPIC` as Railway environment variables on the
-   backend service.
+   order notifications - see below) `TELEGRAM_BOT_TOKEN`/`TELEGRAM_CHAT_ID` as Railway
+   environment variables on the backend service.
 3. Railway service settings: **Root Directory** must be `backend` (this is a monorepo —
    without this, Railway's builder scans the repo root and can't detect a Node app at
    all). Build command stays default (`npm run build`, and `postinstall` already runs
