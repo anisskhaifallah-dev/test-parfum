@@ -51,6 +51,18 @@ All routes are prefixed `/api`.
 - `GET /orders`, `GET /orders/:id` — `?status=pending|confirmed|shipped|delivered|cancelled` filter supported on the list
 - `PATCH /orders/:id` — `{ status }`, moves an order through pending → confirmed → shipped → delivered (or cancelled)
 
+## Order notification emails
+
+Every `POST /orders` sends a plain-text email (customer info, address, items, subtotal)
+via `backend/src/lib/mailer.ts`. It's entirely optional: if `SMTP_HOST` / `SMTP_USER` /
+`SMTP_PASSWORD` / `NOTIFY_EMAIL` aren't all set, sending is skipped (logged, not an error)
+and checkout still works normally - a broken/unconfigured mail server never blocks an
+order. See `.env.example` for the exact variable names.
+
+To use an existing mailbox (e.g. `support@yyparfum.com` from your domain host), find its
+SMTP host/port in your host's control panel or the welcome email sent when the mailbox
+was created - `SMTP_USER`/`SMTP_PASSWORD` are that mailbox's login and password.
+
 ## Deploying to Railway (Postgres)
 
 1. Add a **Postgres** plugin to the Railway project (**+ New** → **Database** → **Add
@@ -58,8 +70,9 @@ All routes are prefixed `/api`.
    **Add Reference** pointing at the Postgres service's `DATABASE_URL` — don't type the
    connection string by hand.
 2. Set `JWT_SECRET`, `CORS_ORIGIN` (the deployed frontend origin, **no trailing slash** —
-   CORS origin matching is exact), and `ADMIN_EMAIL`/`ADMIN_PASSWORD` as Railway
-   environment variables on the backend service.
+   CORS origin matching is exact), `ADMIN_EMAIL`/`ADMIN_PASSWORD`, and (optional, for
+   order notification emails - see below) `SMTP_HOST`/`SMTP_PORT`/`SMTP_USER`/
+   `SMTP_PASSWORD`/`NOTIFY_EMAIL` as Railway environment variables on the backend service.
 3. Railway service settings: **Root Directory** must be `backend` (this is a monorepo —
    without this, Railway's builder scans the repo root and can't detect a Node app at
    all). Build command stays default (`npm run build`, and `postinstall` already runs
