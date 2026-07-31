@@ -31,6 +31,24 @@ app.use(express.json());
 
 app.get('/api/health', (_req, res) => res.json({ ok: true }));
 
+// Temporary - diagnosing outbound connectivity. Remove once resolved.
+app.get('/api/debug-net', async (_req, res) => {
+  const results: Record<string, string> = {};
+  for (const [name, url] of Object.entries({
+    ipify: 'https://api.ipify.org?format=json',
+    ntfy: 'https://ntfy.sh/v1/health',
+    github: 'https://api.github.com',
+  })) {
+    try {
+      const r = await fetch(url, { signal: AbortSignal.timeout(8000) });
+      results[name] = `OK ${r.status}`;
+    } catch (err) {
+      results[name] = `FAIL ${err instanceof Error ? err.message : String(err)}`;
+    }
+  }
+  res.json(results);
+});
+
 app.use('/api/auth', authRouter);
 app.use('/api/products', productsRouter);
 app.use('/api/packs', packsRouter);
