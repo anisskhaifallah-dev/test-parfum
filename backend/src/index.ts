@@ -35,9 +35,8 @@ app.get('/api/health', (_req, res) => res.json({ ok: true }));
 app.get('/api/debug-net', async (_req, res) => {
   const results: Record<string, string> = {};
   for (const [name, url] of Object.entries({
-    ipify: 'https://api.ipify.org?format=json',
-    ntfy: 'https://ntfy.sh/v1/health',
-    github: 'https://api.github.com',
+    telegram: 'https://api.telegram.org',
+    discord: 'https://discord.com/api/v10/gateway',
   })) {
     try {
       const r = await fetch(url, { signal: AbortSignal.timeout(8000) });
