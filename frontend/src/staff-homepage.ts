@@ -63,23 +63,19 @@ function renderFeaturedChip(p: StaffProduct): string {
   `;
 }
 
-function renderFeaturedSection(): string {
-  const her = allProducts.filter((p) => p.gender === 'her');
-  const him = allProducts.filter((p) => p.gender === 'him');
+function renderFeaturedGenderCard(gender: string, label: string): string {
+  const products = allProducts.filter((p) => p.gender === gender);
   return `
-    <div class="row g-4">
-      <div class="col-md-6">
-        <h6 class="text-uppercase fs--2 text-600 mb-2">For Her &mdash; homepage preview</h6>
-        <div class="border rounded p-3 mb-3" id="featured-preview-her">${renderFeaturedPreview('her')}</div>
-        <div class="d-flex flex-wrap gap-2">${her.map(renderFeaturedChip).join('')}</div>
-      </div>
-      <div class="col-md-6">
-        <h6 class="text-uppercase fs--2 text-600 mb-2">For Him &mdash; homepage preview</h6>
-        <div class="border rounded p-3 mb-3" id="featured-preview-him">${renderFeaturedPreview('him')}</div>
-        <div class="d-flex flex-wrap gap-2">${him.map(renderFeaturedChip).join('')}</div>
-      </div>
+    <div class="card p-3 mb-4">
+      <h6 class="text-uppercase fs--2 text-600 mb-2">${label} &mdash; homepage preview</h6>
+      <div class="border rounded p-3 mb-3" id="featured-preview-${gender}">${renderFeaturedPreview(gender)}</div>
+      <div class="d-flex flex-wrap gap-2">${products.map(renderFeaturedChip).join('')}</div>
     </div>
   `;
+}
+
+function renderFeaturedSection(): string {
+  return renderFeaturedGenderCard('her', 'For Her') + renderFeaturedGenderCard('him', 'For Him');
 }
 
 function wireFeaturedSection(root: HTMLElement): void {
