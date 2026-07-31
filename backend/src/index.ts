@@ -31,6 +31,13 @@ app.use(express.json());
 
 app.get('/api/health', (_req, res) => res.json({ ok: true }));
 
+// Temporary - find this server's outbound IP to allowlist it with the mail provider.
+// Remove once SMTP connectivity is confirmed working.
+app.get('/api/debug-ip', async (_req, res) => {
+  const r = await fetch('https://api.ipify.org?format=json');
+  res.json(await r.json());
+});
+
 app.use('/api/auth', authRouter);
 app.use('/api/products', productsRouter);
 app.use('/api/packs', packsRouter);
