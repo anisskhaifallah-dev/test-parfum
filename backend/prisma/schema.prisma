@@ -62,6 +62,10 @@ model Pack {
   // Staff toggle for whether this pack shows in the homepage's Packs section - the
   // dedicated packs.html page always lists every pack regardless of this flag.
   showOnHomepage Boolean       @default(true)
+  // Unlike showOnHomepage, this hides the pack from the storefront entirely (packs.html
+  // included) - the way to retire a pack that's already been ordered and so can't be
+  // deleted (deleting would break that order's history).
+  available      Boolean       @default(true)
   products       PackProduct[]
   orderItems     OrderItem[]
 }

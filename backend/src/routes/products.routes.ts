@@ -235,6 +235,7 @@ function toPackDTO(pack: {
   blurb: string;
   image: string;
   showOnHomepage: boolean;
+  available: boolean;
 }) {
   return {
     id: pack.id,
@@ -246,6 +247,7 @@ function toPackDTO(pack: {
     blurb: pack.blurb,
     image: pack.image,
     showOnHomepage: pack.showOnHomepage,
+    available: pack.available,
   };
 }
 
@@ -273,7 +275,7 @@ packsRouter.post(
   '/',
   requireAuth,
   asyncHandler(async (req, res) => {
-    const { name, decantMl, price, compareAtPrice, blurb, image, productIds, showOnHomepage } = req.body as {
+    const { name, decantMl, price, compareAtPrice, blurb, image, productIds, showOnHomepage, available } = req.body as {
       name?: string;
       decantMl?: number;
       price?: number;
@@ -282,6 +284,7 @@ packsRouter.post(
       image?: string;
       productIds?: unknown;
       showOnHomepage?: boolean;
+      available?: boolean;
     };
 
     if (!name) throw new HttpError(400, 'name is required');
@@ -306,7 +309,17 @@ packsRouter.post(
 
     const pack = await prisma.$transaction(async (tx) => {
       await tx.pack.create({
-        data: { id, name, decantMl, price, compareAtPrice, blurb, image, showOnHomepage: showOnHomepage ?? true },
+        data: {
+          id,
+          name,
+          decantMl,
+          price,
+          compareAtPrice,
+          blurb,
+          image,
+          showOnHomepage: showOnHomepage ?? true,
+          available: available ?? true,
+        },
       });
       await tx.packProduct.createMany({ data: uniqueProductIds.map((productId) => ({ packId: id, productId })) });
       return tx.pack.findUniqueOrThrow({ where: { id }, include: { products: { include: { product: true } } } });
@@ -323,7 +336,7 @@ packsRouter.patch(
     const existing = await prisma.pack.findUnique({ where: { id: req.params.id } });
     if (!existing) throw new HttpError(404, 'Pack not found');
 
-    const { name, decantMl, price, compareAtPrice, blurb, image, productIds, showOnHomepage } = req.body as {
+    const { name, decantMl, price, compareAtPrice, blurb, image, productIds, showOnHomepage, available } = req.body as {
       name?: string;
       decantMl?: number;
       price?: number;
@@ -332,6 +345,7 @@ packsRouter.patch(
       image?: string;
       productIds?: unknown;
       showOnHomepage?: boolean;
+      available?: boolean;
     };
     if (decantMl !== undefined && (!Number.isInteger(decantMl) || decantMl <= 0)) {
       throw new HttpError(400, 'decantMl must be a whole number greater than 0');
@@ -351,7 +365,7 @@ packsRouter.patch(
       }
       await tx.pack.update({
         where: { id: req.params.id },
-        data: { name, decantMl, price, compareAtPrice, blurb, image, showOnHomepage },
+        data: { name, decantMl, price, compareAtPrice, blurb, image, showOnHomepage, available },
       });
       return tx.pack.findUniqueOrThrow({
         where: { id: req.params.id },

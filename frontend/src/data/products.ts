@@ -32,6 +32,7 @@ export interface Pack {
   blurb: string;
   image: string;
   showOnHomepage: boolean;
+  available: boolean;
 }
 
 export const NOTES_BY_FAMILY: Record<Family, { top: string[]; heart: string[]; base: string[] }> = {
@@ -83,8 +84,12 @@ export function getOthers(product: Product): Product[] {
   return products.filter((p) => p.id !== product.id);
 }
 
+// Unlike products (which stay visible-but-marked "Unavailable"), an unavailable pack is
+// fully hidden from every storefront listing - it's the only way to retire a pack that's
+// already been ordered and so can't be deleted. getPackById() is intentionally NOT
+// filtered, so a pack already sitting in someone's cart still resolves there.
 export function getAllPacks(): Pack[] {
-  return packs;
+  return packs.filter((p) => p.available);
 }
 
 export function searchProducts(query: string): Product[] {

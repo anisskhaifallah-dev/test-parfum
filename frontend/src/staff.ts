@@ -373,6 +373,16 @@ async function updateOrderStatus(id: string, status: string): Promise<void> {
   await apiFetch(`/orders/${id}`, { method: 'PATCH', body: JSON.stringify({ status }) }, getToken() ?? undefined);
 }
 
+async function deleteOrder(id: string, statusFilter?: string): Promise<void> {
+  if (!confirm('Delete this order? This cannot be undone.')) return;
+  try {
+    await apiFetch(`/orders/${id}`, { method: 'DELETE' }, getToken() ?? undefined);
+    await loadOrders(statusFilter);
+  } catch (err) {
+    alert(err instanceof Error ? err.message : 'Delete failed');
+  }
+}
+
 async function loadOrders(statusFilter?: string): Promise<void> {
   const query = statusFilter ? `?status=${statusFilter}` : '';
   const orders = await apiFetch<StaffOrder[]>(`/orders${query}`, {}, getToken() ?? undefined);
@@ -393,6 +403,9 @@ async function loadOrders(statusFilter?: string): Promise<void> {
               ${STATUSES.map((s) => `<option value="${s}" ${s === o.status ? 'selected' : ''}>${s}</option>`).join('')}
             </select>
           </td>
+          <td class="text-end">
+            <button type="button" class="btn btn-sm btn-outline-danger" data-delete-order="${o.id}">Delete</button>
+          </td>
         </tr>
       `
     )
@@ -407,6 +420,13 @@ async function loadOrders(statusFilter?: string): Promise<void> {
       } catch (err) {
         alert(err instanceof Error ? err.message : 'Could not update order status');
       }
+    });
+  });
+
+  tbody.querySelectorAll<HTMLButtonElement>('[data-delete-order]').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const filter = (document.getElementById('orders-status-filter') as HTMLSelectElement).value || undefined;
+      void deleteOrder(btn.dataset.deleteOrder as string, filter);
     });
   });
 }

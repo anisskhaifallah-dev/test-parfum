@@ -207,7 +207,7 @@
           <div class="table-responsive mb-4">
             <table class="table align-middle">
               <thead>
-                <tr><th></th><th>Name</th><th>Includes</th><th>Size</th><th>Price</th><th>Homepage</th><th></th></tr>
+                <tr><th></th><th>Name</th><th>Includes</th><th>Size</th><th>Price</th><th>Homepage</th><th>Status</th><th></th></tr>
               </thead>
               <tbody id="packs-tbody"></tbody>
             </table>
@@ -241,6 +241,10 @@
                 <input class="form-check-input" type="checkbox" id="pack-show-homepage" checked />
                 <label class="form-check-label fs--1" for="pack-show-homepage">Show this pack on the homepage</label>
               </div>
+              <div class="form-check">
+                <input class="form-check-input" type="checkbox" id="pack-available" checked />
+                <label class="form-check-label fs--1" for="pack-available">Available for purchase</label>
+              </div>
             </div>
 
             <div class="col-12">
@@ -266,7 +270,7 @@
           <div class="table-responsive">
             <table class="table align-middle">
               <thead>
-                <tr><th>Date</th><th>Customer</th><th>Address</th><th>Products</th><th>Notes</th><th>Total</th><th>Status</th></tr>
+                <tr><th>Date</th><th>Customer</th><th>Address</th><th>Products</th><th>Notes</th><th>Total</th><th>Status</th><th></th></tr>
               </thead>
               <tbody id="orders-tbody"></tbody>
             </table>

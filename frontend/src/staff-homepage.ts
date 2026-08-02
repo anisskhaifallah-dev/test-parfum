@@ -20,6 +20,7 @@ interface StaffPack {
   blurb: string;
   image: string;
   showOnHomepage: boolean;
+  available: boolean;
 }
 
 let allProducts: StaffProduct[] = [];
@@ -138,7 +139,12 @@ async function loadAndRenderPacksVisibility(): Promise<void> {
   const container = document.getElementById('homepage-packs') as HTMLElement;
   const packs = await apiFetch<StaffPack[]>('/packs', {}, getToken() ?? undefined);
 
-  container.innerHTML = packs.map(renderPackVisibilityRow).join('');
+  // Retired (unavailable) packs never show on the homepage regardless of this toggle,
+  // so there's nothing useful to control here for one - leave it out of this list.
+  container.innerHTML = packs
+    .filter((p) => p.available)
+    .map(renderPackVisibilityRow)
+    .join('');
   wirePacksVisibility(container);
 }
 

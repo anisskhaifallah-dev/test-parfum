@@ -18,6 +18,7 @@ const EXISTING_PACK = {
   blurb: 'Two of our favorites.',
   image: 'her-duo.webp',
   showOnHomepage: true,
+  available: true,
 };
 
 function setupDom() {
@@ -35,6 +36,7 @@ function setupDom() {
       <textarea id="pack-blurb"></textarea>
       <div id="pack-product-picker"></div>
       <input id="pack-show-homepage" type="checkbox" checked />
+      <input id="pack-available" type="checkbox" checked />
       <button type="submit">Save</button>
       <div id="pack-form-error" class="d-none"></div>
     </form>
@@ -121,10 +123,26 @@ describe('staff pack catalog management', () => {
     const tbody = document.getElementById('packs-tbody') as HTMLElement;
     expect(tbody.textContent).toContain('Her Duo');
     expect(tbody.textContent).toContain('Jasmin Blanc + Ambre Precieux');
+    expect(tbody.textContent).toContain('Available');
+    expect(tbody.querySelector('[data-toggle-pack-available="her-duo"]')?.textContent).toBe('Mark Unavailable');
 
     const picker = document.getElementById('pack-product-picker') as HTMLElement;
     expect(picker.textContent).toContain('Jasmin Blanc');
     expect(picker.textContent).toContain('Oud Essentiel');
+  });
+
+  it('marks a pack unavailable via the table toggle, without touching its other fields', async () => {
+    setupDom();
+    const fetchSpy = mockRoutedFetch();
+    vi.stubGlobal('fetch', fetchSpy);
+
+    await initPacksCatalog();
+    (document.querySelector('[data-toggle-pack-available="her-duo"]') as HTMLButtonElement).click();
+    await flushAsync();
+
+    const patchCall = fetchSpy.mock.calls.find(([url, opts]) => url.endsWith('/packs/her-duo') && opts?.method === 'PATCH');
+    expect(patchCall).toBeTruthy();
+    expect(JSON.parse(patchCall![1]!.body as string)).toEqual({ available: false });
   });
 
   it('creates a new pack with the selected products and uploaded image', async () => {
@@ -174,6 +192,7 @@ describe('staff pack catalog management', () => {
     const body = JSON.parse(patchCall![1]!.body as string);
     expect(body.name).toBe('Her Duo');
     expect(body.productIds.sort()).toEqual(['ambre-precieux', 'jasmin-blanc']);
+    expect(body.available).toBe(true);
   });
 
   it('deletes a pack after confirmation', async () => {

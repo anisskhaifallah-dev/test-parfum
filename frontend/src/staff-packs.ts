@@ -19,6 +19,7 @@ interface StaffPack {
   blurb: string;
   image: string;
   showOnHomepage: boolean;
+  available: boolean;
 }
 
 let allProducts: StaffProduct[] = [];
@@ -114,6 +115,7 @@ function resetPackForm(): void {
   (document.getElementById('pack-form-title') as HTMLElement).textContent = 'Add pack';
   (document.getElementById('pack-form-error') as HTMLElement).classList.add('d-none');
   (document.getElementById('pack-show-homepage') as HTMLInputElement).checked = true;
+  (document.getElementById('pack-available') as HTMLInputElement).checked = true;
   setPackImagePreview('');
   pickerContainer().innerHTML = renderProductPicker([]);
   wireProductPicker();
@@ -127,6 +129,7 @@ function fillPackForm(pack: StaffPack): void {
   (document.getElementById('pack-compare') as HTMLInputElement).value = String(pack.compareAtPrice);
   (document.getElementById('pack-blurb') as HTMLTextAreaElement).value = pack.blurb;
   (document.getElementById('pack-show-homepage') as HTMLInputElement).checked = pack.showOnHomepage;
+  (document.getElementById('pack-available') as HTMLInputElement).checked = pack.available;
   (document.getElementById('pack-form-title') as HTMLElement).textContent = `Edit ${pack.name}`;
   (document.getElementById('pack-form-error') as HTMLElement).classList.add('d-none');
   setPackImagePreview(pack.image);
@@ -143,6 +146,15 @@ async function deletePack(id: string): Promise<void> {
     await loadPacks();
   } catch (err) {
     alert(err instanceof Error ? err.message : 'Delete failed');
+  }
+}
+
+async function togglePackAvailability(id: string, makeAvailable: boolean): Promise<void> {
+  try {
+    await apiFetch(`/packs/${id}`, { method: 'PATCH', body: JSON.stringify({ available: makeAvailable }) }, getToken() ?? undefined);
+    await loadPacks();
+  } catch (err) {
+    alert(err instanceof Error ? err.message : 'Could not update availability');
   }
 }
 
@@ -168,8 +180,10 @@ export async function loadPacks(): Promise<void> {
           <td>${pack.decantMl}ml</td>
           <td>${pack.price} DH <span class="text-700 fs--2 text-decoration-line-through">${pack.compareAtPrice} DH</span></td>
           <td><span class="badge ${pack.showOnHomepage ? 'bg-success' : 'bg-secondary'}">${pack.showOnHomepage ? 'On homepage' : 'Hidden'}</span></td>
+          <td><span class="badge ${pack.available ? 'bg-success' : 'bg-secondary'}">${pack.available ? 'Available' : 'Unavailable'}</span></td>
           <td class="text-end">
             <button type="button" class="btn btn-sm btn-outline-secondary" data-edit-pack="${pack.id}">Edit</button>
+            <button type="button" class="btn btn-sm ${pack.available ? 'btn-outline-warning' : 'btn-outline-success'}" data-toggle-pack-available="${pack.id}" data-next="${pack.available ? 'false' : 'true'}">${pack.available ? 'Mark Unavailable' : 'Mark Available'}</button>
             <button type="button" class="btn btn-sm btn-outline-danger" data-delete-pack="${pack.id}">Delete</button>
           </td>
         </tr>
@@ -181,6 +195,11 @@ export async function loadPacks(): Promise<void> {
     btn.addEventListener('click', () => {
       const pack = packs.find((p) => p.id === btn.dataset.editPack);
       if (pack) fillPackForm(pack);
+    });
+  });
+  tbody.querySelectorAll<HTMLButtonElement>('[data-toggle-pack-available]').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      togglePackAvailability(btn.dataset.togglePackAvailable as string, btn.dataset.next === 'true');
     });
   });
   tbody.querySelectorAll<HTMLButtonElement>('[data-delete-pack]').forEach((btn) => {
@@ -213,6 +232,7 @@ export async function handlePackSubmit(e: SubmitEvent): Promise<void> {
     blurb: (document.getElementById('pack-blurb') as HTMLTextAreaElement).value,
     image: currentPackImageUrl,
     showOnHomepage: (document.getElementById('pack-show-homepage') as HTMLInputElement).checked,
+    available: (document.getElementById('pack-available') as HTMLInputElement).checked,
     productIds,
   };
 

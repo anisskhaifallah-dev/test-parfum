@@ -5,7 +5,8 @@ import { initHomepagePanel } from './staff-homepage';
 const PRODUCTS = [{ id: 'jasmin-blanc', name: 'Jasmin Blanc', gender: 'her', image: 'jasmin.webp', featured: true }];
 
 const PACKS = [
-  { id: 'her-duo', name: 'Her Duo', productIds: ['jasmin-blanc'], decantMl: 10, price: 38, compareAtPrice: 45, blurb: '', image: 'her-duo.webp', showOnHomepage: true },
+  { id: 'her-duo', name: 'Her Duo', productIds: ['jasmin-blanc'], decantMl: 10, price: 38, compareAtPrice: 45, blurb: '', image: 'her-duo.webp', showOnHomepage: true, available: true },
+  { id: 'retired-pack', name: 'Retired Pack', productIds: ['jasmin-blanc'], decantMl: 10, price: 30, compareAtPrice: 40, blurb: '', image: 'retired.webp', showOnHomepage: true, available: false },
 ];
 
 function setupDom() {
@@ -67,6 +68,17 @@ describe('homepage panel pack visibility toggle', () => {
     expect(container.querySelector('[data-pack-visibility-toggle="her-duo"]')).toBeTruthy();
     expect(container.querySelector('[data-delete-pack]')).toBeNull();
     expect(container.querySelector('input[type="checkbox"][value]')).toBeNull(); // no product-selection chips
+  });
+
+  it('excludes retired (unavailable) packs entirely - nothing to control for them here', async () => {
+    setupDom();
+    vi.stubGlobal('fetch', mockRoutedFetch());
+
+    await initHomepagePanel();
+
+    const container = document.getElementById('homepage-packs') as HTMLElement;
+    expect(container.textContent).not.toContain('Retired Pack');
+    expect(container.querySelector('[data-pack-visibility-toggle="retired-pack"]')).toBeNull();
   });
 
   it('toggling visibility only PATCHes showOnHomepage, nothing else', async () => {

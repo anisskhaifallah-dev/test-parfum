@@ -67,6 +67,7 @@ ordersRouter.post(
           if (!item.packId) throw new HttpError(400, 'packId is required for pack lines');
           const pack = await prisma.pack.findUnique({ where: { id: item.packId } });
           if (!pack) throw new HttpError(404, `Pack not found: ${item.packId}`);
+          if (!pack.available) throw new HttpError(400, `${pack.name} is currently unavailable`);
           return {
             kind: 'pack',
             packId: pack.id,
@@ -146,5 +147,23 @@ ordersRouter.patch(
       include: { items: true },
     });
     res.json(order);
+  })
+);
+
+// Staff can permanently remove an order (e.g. test orders placed during setup) - this
+// also frees up any product/pack that was only blocked from deletion because it
+// appeared in this order.
+ordersRouter.delete(
+  '/:id',
+  asyncHandler(async (req, res) => {
+    const existing = await prisma.order.findUnique({ where: { id: req.params.id } });
+    if (!existing) throw new HttpError(404, 'Order not found');
+
+    await prisma.$transaction([
+      prisma.orderItem.deleteMany({ where: { orderId: req.params.id } }),
+      prisma.order.delete({ where: { id: req.params.id } }),
+    ]);
+
+    res.json({ ok: true });
   })
 );
