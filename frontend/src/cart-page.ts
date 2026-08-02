@@ -113,9 +113,8 @@ async function handleCheckoutSubmit(e: SubmitEvent) {
     fullName: String(data.get('fullName') ?? ''),
     phone: String(data.get('phone') ?? ''),
     line1: String(data.get('line1') ?? ''),
-    line2: String(data.get('line2') ?? '') || undefined,
-    city: String(data.get('city') ?? ''),
-    country: String(data.get('country') ?? ''),
+    city: 'Youssoufia',
+    country: 'Morocco',
     notes: String(data.get('notes') ?? '') || undefined,
     items: toOrderItems(getCart()),
   };
