@@ -1,0 +1,44 @@
+name: Uptime Check
+
+on:
+  schedule:
+    - cron: '*/15 * * * *'
+  workflow_dispatch:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check frontend (yyparfum.com)
+        id: frontend
+        run: |
+          code=$(curl -s -o /dev/null -w "%{http_code}" --max-time 15 https://yyparfum.com)
+          echo "code=$code" >> "$GITHUB_OUTPUT"
+
+      - name: Check backend (Railway /api/health)
+        id: backend
+        run: |
+          code=$(curl -s -o /dev/null -w "%{http_code}" --max-time 15 https://test-parfum-production.up.railway.app/api/health)
+          echo "code=$code" >> "$GITHUB_OUTPUT"
+
+      # Reuses the same Telegram bot already wired up for order notifications - no new
+      # service/account needed. TELEGRAM_CHAT_ID may be a comma-separated list (see
+      # backend/.env.example), so this loops over every recipient the same way
+      # backend/src/lib/notify.ts does.
+      - name: Alert via Telegram if either check failed
+        if: steps.frontend.outputs.code != '200' || steps.backend.outputs.code != '200'
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          FRONTEND_CODE: ${{ steps.frontend.outputs.code }}
+          BACKEND_CODE: ${{ steps.backend.outputs.code }}
+        run: |
+          MESSAGE="YY Parfums uptime alert
+          frontend (yyparfum.com): HTTP ${FRONTEND_CODE}
+          backend (Railway /api/health): HTTP ${BACKEND_CODE}"
+          IFS=',' read -ra CHAT_IDS <<< "$TELEGRAM_CHAT_ID"
+          for chat_id in "${CHAT_IDS[@]}"; do
+            curl -s -X POST "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage" \
+              --data-urlencode "chat_id=${chat_id}" \
+              --data-urlencode "text=${MESSAGE}"
+          done
