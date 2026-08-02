@@ -1,5 +1,7 @@
 import { apiFetch, API_BASE } from './api';
 import { getToken, setToken, clearToken } from './staff-token';
+import { escapeHtml } from './escape-html';
+import { initPacksCatalog } from './staff-packs';
 
 const STATUSES = ['pending', 'confirmed', 'shipped', 'delivered', 'cancelled'];
 
@@ -283,10 +285,10 @@ async function loadProducts(): Promise<void> {
             </div>
           </td>
           <td><img src="${p.image}" alt="" style="width:40px;height:40px;object-fit:cover;border-radius:4px;" /></td>
-          <td>${p.name}<br /><span class="text-700 fs--2">${p.id}</span></td>
-          <td>${p.gender} <span class="text-700 fs--2">(#${posInGender + 1})</span></td>
-          <td>${p.family}</td>
-          <td>${p.sizes.map((s) => s.label).join(', ')}</td>
+          <td>${escapeHtml(p.name)}<br /><span class="text-700 fs--2">${p.id}</span></td>
+          <td>${escapeHtml(p.gender)} <span class="text-700 fs--2">(#${posInGender + 1})</span></td>
+          <td>${escapeHtml(p.family)}</td>
+          <td>${p.sizes.map((s) => escapeHtml(s.label)).join(', ')}</td>
           <td>${priceRange(p.sizes)}</td>
           <td><span class="badge ${p.available ? 'bg-success' : 'bg-secondary'}">${p.available ? 'Available' : 'Unavailable'}</span></td>
           <td class="text-end">
@@ -364,7 +366,7 @@ async function handleProductSubmit(e: SubmitEvent): Promise<void> {
 // --- Orders ------------------------------------------------------------------
 
 function describeItems(items: StaffOrderItem[]): string {
-  return items.map((i) => `${i.qty}&times; ${i.nameSnapshot}${i.ml ? ` (${i.ml}ml)` : ''}`).join('<br />');
+  return items.map((i) => `${i.qty}&times; ${escapeHtml(i.nameSnapshot)}${i.ml ? ` (${i.ml}ml)` : ''}`).join('<br />');
 }
 
 async function updateOrderStatus(id: string, status: string): Promise<void> {
@@ -381,10 +383,10 @@ async function loadOrders(statusFilter?: string): Promise<void> {
       (o) => `
         <tr>
           <td>${new Date(o.createdAt).toLocaleString()}</td>
-          <td>${o.fullName}<br /><span class="text-700 fs--2">${o.phone}</span></td>
-          <td>${o.line1}${o.line2 ? `, ${o.line2}` : ''}, ${o.city}, ${o.country}</td>
+          <td>${escapeHtml(o.fullName)}<br /><span class="text-700 fs--2">${escapeHtml(o.phone)}</span></td>
+          <td>${escapeHtml(o.line1)}${o.line2 ? `, ${escapeHtml(o.line2)}` : ''}, ${escapeHtml(o.city)}, ${escapeHtml(o.country)}</td>
           <td>${describeItems(o.items)}</td>
-          <td>${o.notes ?? ''}</td>
+          <td>${escapeHtml(o.notes)}</td>
           <td>${o.subtotal} DH</td>
           <td>
             <select class="form-select form-select-sm status-select status-${o.status}" data-order="${o.id}">
@@ -424,7 +426,7 @@ async function handleLogin(e: SubmitEvent): Promise<void> {
     setToken(result.token);
     currentStaff = result.staff;
     showDashboard();
-    await Promise.all([loadProducts(), loadOrders()]);
+    await Promise.all([loadProducts(), loadOrders(), initPacksCatalog()]);
   } catch (err) {
     showLogin(err instanceof Error ? err.message : 'Login failed');
   }
@@ -445,7 +447,7 @@ async function tryResume(): Promise<void> {
   try {
     currentStaff = await apiFetch<StaffAccount>('/auth/me', {}, token);
     showDashboard();
-    await Promise.all([loadProducts(), loadOrders()]);
+    await Promise.all([loadProducts(), loadOrders(), initPacksCatalog()]);
   } catch {
     clearToken();
     showLogin();

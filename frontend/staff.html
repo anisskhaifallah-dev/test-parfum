@@ -202,6 +202,53 @@
               <div id="product-form-error" class="text-danger fs--1 mt-2 d-none"></div>
             </div>
           </form>
+
+          <h4 class="mt-5 mb-3">Packs</h4>
+          <div class="table-responsive mb-4">
+            <table class="table align-middle">
+              <thead>
+                <tr><th></th><th>Name</th><th>Includes</th><th>Size</th><th>Price</th><th>Homepage</th><th></th></tr>
+              </thead>
+              <tbody id="packs-tbody"></tbody>
+            </table>
+          </div>
+
+          <h5 id="pack-form-title" class="mb-2">Add pack</h5>
+          <form id="pack-form" class="row g-2">
+            <div class="col-md-6"><input class="form-control" id="pack-name" placeholder="Name" required /></div>
+            <div class="col-md-2"><input class="form-control" id="pack-decant" type="number" min="1" placeholder="ml each" required /></div>
+            <div class="col-md-2"><input class="form-control" id="pack-price" type="number" min="1" placeholder="Price (DH)" required /></div>
+            <div class="col-md-2"><input class="form-control" id="pack-compare" type="number" min="1" placeholder="Compare-at (DH)" required /></div>
+
+            <div class="col-12">
+              <label class="form-label fs--1 text-700 mb-1">Image</label>
+              <div class="d-flex align-items-center gap-3">
+                <img id="pack-image-preview" class="d-none" style="width:64px;height:64px;object-fit:cover;border-radius:6px;" alt="" />
+                <input class="form-control" id="pack-image-file" type="file" accept="image/png,image/jpeg,image/webp,image/gif" style="max-width:320px;" />
+                <span id="pack-image-status" class="fs--1 d-none"></span>
+              </div>
+            </div>
+
+            <div class="col-12"><textarea class="form-control" id="pack-blurb" placeholder="Short description" rows="2" required></textarea></div>
+
+            <div class="col-12">
+              <label class="form-label fs--1 text-700 mb-1">Products in this pack</label>
+              <div id="pack-product-picker"></div>
+            </div>
+
+            <div class="col-12">
+              <div class="form-check">
+                <input class="form-check-input" type="checkbox" id="pack-show-homepage" checked />
+                <label class="form-check-label fs--1" for="pack-show-homepage">Show this pack on the homepage</label>
+              </div>
+            </div>
+
+            <div class="col-12">
+              <button class="btn btn-dark" type="submit">Save</button>
+              <button class="btn btn-outline-secondary" type="button" id="pack-form-cancel">Cancel edit</button>
+              <div id="pack-form-error" class="text-danger fs--1 mt-2 d-none"></div>
+            </div>
+          </form>
         </section>
 
         <section id="panel-commands" class="staff-panel d-none" data-panel="commands">
@@ -235,7 +282,7 @@
           <div id="homepage-featured" class="mb-5"></div>
 
           <h5 class="mb-3">Packs</h5>
-          <p class="text-700 fs--1 mb-3">Choose which packs appear on the homepage, what each one bundles, and create new ones.</p>
+          <p class="text-700 fs--1 mb-3">Choose which packs appear on the homepage. To create, edit, or delete a pack, use the Catalogs tab.</p>
           <div id="homepage-packs"></div>
         </section>
 
