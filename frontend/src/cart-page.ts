@@ -1,6 +1,8 @@
 import { getCart, updateCartQty, removeCartLine, clearCart, getCartTotal, lineTotal, type CartLine } from './cart';
 import { getProductById, getPackById } from './data/products';
 import { apiFetch } from './api';
+import { t } from './i18n';
+import { escapeHtml } from './escape-html';
 
 interface OrderItemPayload {
   kind: 'product' | 'pack';
@@ -15,11 +17,15 @@ function describeLine(line: CartLine): { image: string; name: string; meta: stri
     const product = getProductById(line.productId);
     if (!product) return null;
     const size = product.sizes.find((s) => s.ml === line.ml);
-    return { image: product.image, name: product.name, meta: `${size?.label ?? ''} &middot; ${size?.price ?? 0} DH each` };
+    return {
+      image: product.image,
+      name: escapeHtml(product.name),
+      meta: `${escapeHtml(size?.label)} &middot; ${size?.price ?? 0} DH ${t('cart.each')}`,
+    };
   }
   const pack = getPackById(line.packId);
   if (!pack) return null;
-  return { image: pack.image, name: pack.name, meta: `Pack &middot; ${pack.price} DH each` };
+  return { image: pack.image, name: escapeHtml(pack.name), meta: `${t('cart.packLabel')} &middot; ${pack.price} DH ${t('cart.each')}` };
 }
 
 function toOrderItems(lines: CartLine[]): OrderItemPayload[] {
@@ -40,7 +46,7 @@ function render() {
   if (lines.length === 0) {
     list.innerHTML = '';
     empty.classList.remove('d-none');
-    subtotal.textContent = '$0';
+    subtotal.textContent = '0 DH';
     checkoutSection.classList.add('d-none');
     return;
   }
@@ -65,7 +71,7 @@ function render() {
           </div>
           <div class="text-end">
             <p class="fw-bold mb-2">${lineTotal(line)} DH</p>
-            <button type="button" class="btn btn-link text-danger p-0 fs--1" data-action="remove" data-index="${index}">Remove</button>
+            <button type="button" class="btn btn-link text-danger p-0 fs--1" data-action="remove" data-index="${index}">${t('cart.remove')}</button>
           </div>
         </div>
       `;
@@ -115,7 +121,7 @@ async function handleCheckoutSubmit(e: SubmitEvent) {
   };
 
   submitBtn.disabled = true;
-  submitBtn.textContent = 'Placing order...';
+  submitBtn.textContent = t('cart.placingOrder');
   try {
     await apiFetch('/orders', { method: 'POST', body: JSON.stringify(payload) });
     clearCart();
@@ -124,12 +130,17 @@ async function handleCheckoutSubmit(e: SubmitEvent) {
     (document.getElementById('cart-empty') as HTMLElement).classList.add('d-none');
     (document.getElementById('cart-list') as HTMLElement).innerHTML = '';
   } catch (err) {
-    errorEl.textContent = err instanceof Error ? err.message : 'Could not place order. Please try again.';
+    errorEl.textContent = err instanceof Error ? err.message : t('cart.genericError');
     errorEl.classList.remove('d-none');
   } finally {
     submitBtn.disabled = false;
-    submitBtn.textContent = 'Place Order (Cash on Delivery)';
+    submitBtn.textContent = t('cart.placeOrder');
   }
+}
+
+/** Re-render the cart list/subtotal in the newly selected language, without re-wiring the checkout form. */
+export function renderCartPage(): void {
+  render();
 }
 
 export function initCartPage(): void {

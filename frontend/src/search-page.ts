@@ -1,5 +1,6 @@
 import { searchProducts } from './data/products';
 import { renderCard, wireWishlistButtons } from './product-card';
+import { t } from './i18n';
 
 function render(query: string) {
   const grid = document.getElementById('search-grid') as HTMLElement;
@@ -10,22 +11,31 @@ function render(query: string) {
     grid.innerHTML = '';
     count.textContent = '';
     empty.classList.remove('d-none');
-    empty.querySelector('p')!.textContent = 'Type a fragrance name or family to search.';
+    empty.querySelector('p')!.textContent = t('search.prompt');
     return;
   }
 
   const results = searchProducts(query);
-  count.textContent = `${results.length} result${results.length === 1 ? '' : 's'} for "${query}"`;
+  count.textContent = t(results.length === 1 ? 'search.resultsCountOne' : 'search.resultsCountOther', {
+    count: results.length,
+    query,
+  });
 
   if (results.length === 0) {
     grid.innerHTML = '';
     empty.classList.remove('d-none');
-    empty.querySelector('p')!.textContent = `No fragrances match "${query}".`;
+    empty.querySelector('p')!.textContent = t('search.noResults', { query });
   } else {
     empty.classList.add('d-none');
     grid.innerHTML = results.map(renderCard).join('');
     wireWishlistButtons(grid);
   }
+}
+
+/** Re-render search results in the newly selected language, without re-wiring the input listener. */
+export function rerenderSearchPage(): void {
+  const input = document.getElementById('search-input') as HTMLInputElement;
+  render(input.value);
 }
 
 export function initSearchPage(): void {

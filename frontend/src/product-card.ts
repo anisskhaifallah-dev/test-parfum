@@ -1,9 +1,15 @@
 import type { Product, Gender, Pack } from './data/products';
 import { getProductById } from './data/products';
 import { isWishlisted, toggleWishlist } from './wishlist';
+import { t } from './i18n';
+import { escapeHtml } from './escape-html';
 
 export function genderLabel(g: Gender): string {
-  return g === 'her' ? 'For Her' : 'For Him';
+  return g === 'her' ? t('nav.forHer') : t('nav.forHim');
+}
+
+function familyLabel(family: string): string {
+  return t(`family.${family}`);
 }
 
 export function heartIcon(active: boolean): string {
@@ -19,16 +25,16 @@ export function renderCard(p: Product): string {
     <div class="shop-card ${p.available ? '' : 'shop-card-unavailable'}">
       <a href="product.html?id=${p.id}">
         <div class="shop-card-image-wrap">
-          <img src="${p.image}" alt="${p.name}" loading="lazy" width="390" height="520" />
-          ${p.available ? '' : '<span class="shop-card-badge">Unavailable</span>'}
+          <img src="${p.image}" alt="${escapeHtml(p.name)}" loading="lazy" width="390" height="520" />
+          ${p.available ? '' : `<span class="shop-card-badge">${t('product.unavailableBadge')}</span>`}
         </div>
       </a>
-      <button class="shop-card-wishlist ${isWishlisted(p.id) ? 'active' : ''}" data-id="${p.id}" aria-label="Toggle wishlist">${heartIcon(isWishlisted(p.id))}</button>
+      <button class="shop-card-wishlist ${isWishlisted(p.id) ? 'active' : ''}" data-id="${p.id}" aria-label="${t('product.toggleWishlist')}">${heartIcon(isWishlisted(p.id))}</button>
       <a href="product.html?id=${p.id}" style="text-decoration:none;color:inherit;">
         <div class="shop-card-body">
-          <span class="shop-card-family">${p.family} &middot; ${genderLabel(p.gender)}</span>
-          <p class="shop-card-name">${p.name}</p>
-          <span class="shop-card-price">From ${minPrice(p)} DH</span>
+          <span class="shop-card-family">${familyLabel(p.family)} &middot; ${genderLabel(p.gender)}</span>
+          <p class="shop-card-name">${escapeHtml(p.name)}</p>
+          <span class="shop-card-price">${t('product.from')} ${minPrice(p)} DH</span>
         </div>
       </a>
     </div>
@@ -36,16 +42,20 @@ export function renderCard(p: Product): string {
 }
 
 export function renderPackCard(pack: Pack): string {
-  const includedNames = pack.productIds.map((id) => getProductById(id)?.name).filter(Boolean).join(' + ');
+  const includedNames = pack.productIds
+    .map((id) => getProductById(id)?.name)
+    .filter(Boolean)
+    .map((name) => escapeHtml(name))
+    .join(' + ');
   return `
     <div class="shop-card pack-card">
-      <div class="shop-card-image-wrap"><img src="${pack.image}" alt="${pack.name}" loading="lazy" width="390" height="520" /></div>
+      <div class="shop-card-image-wrap"><img src="${pack.image}" alt="${escapeHtml(pack.name)}" loading="lazy" width="390" height="520" /></div>
       <div class="shop-card-body">
         <span class="shop-card-family">${pack.productIds.length} &times; ${pack.decantMl}ml decants</span>
-        <p class="shop-card-name">${pack.name}</p>
+        <p class="shop-card-name">${escapeHtml(pack.name)}</p>
         <p class="text-700 fs--1 mb-2">${includedNames}</p>
         <span class="shop-card-price">${pack.price} DH <span class="text-600 text-decoration-line-through fs--1">${pack.compareAtPrice} DH</span></span>
-        <button type="button" class="btn btn-dark w-100 mt-3" data-add-pack="${pack.id}">Add Pack to Cart</button>
+        <button type="button" class="btn btn-dark w-100 mt-3" data-add-pack="${pack.id}">${t('product.addPackToCart')}</button>
       </div>
     </div>
   `;

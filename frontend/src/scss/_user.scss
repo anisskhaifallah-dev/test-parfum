@@ -442,3 +442,102 @@
   background: none;
   padding: 0;
 }
+
+/*-----------------------------------------------
+|   Language switcher (floating button)
+-----------------------------------------------*/
+.lang-switcher {
+  position: fixed;
+  right: 1rem;
+  bottom: 76px;
+  z-index: 1045;
+}
+@include media-breakpoint-up(lg) {
+  .lang-switcher {
+    bottom: 1.5rem;
+  }
+}
+[dir='rtl'] .lang-switcher {
+  right: auto;
+  left: 1rem;
+}
+.lang-switcher-toggle {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  height: 48px;
+  padding: 0 0.9rem;
+  border-radius: 999px;
+  border: none;
+  background: $gray-1000;
+  color: $white;
+  box-shadow: 0 4px 14px rgba($black, 0.25);
+  cursor: pointer;
+  font-weight: 700;
+  font-size: 0.8rem;
+  letter-spacing: 0.03em;
+}
+.lang-switcher-toggle svg {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+}
+.lang-switcher-menu {
+  position: absolute;
+  bottom: calc(100% + 0.6rem);
+  right: 0;
+  background: $white;
+  border-radius: $border-radius;
+  box-shadow: 0 8px 24px rgba($black, 0.18);
+  padding: 0.4rem;
+  min-width: 150px;
+  display: none;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+[dir='rtl'] .lang-switcher-menu {
+  right: auto;
+  left: 0;
+}
+.lang-switcher.open .lang-switcher-menu {
+  display: flex;
+}
+.lang-switcher-option {
+  display: block;
+  width: 100%;
+  border: none;
+  background: transparent;
+  padding: 0.55rem 0.7rem;
+  border-radius: $border-radius;
+  font-size: 0.9rem;
+  text-align: left;
+  cursor: pointer;
+  color: $gray-1000;
+}
+[dir='rtl'] .lang-switcher-option {
+  text-align: right;
+}
+.lang-switcher-option:hover {
+  background: $gray-100;
+}
+.lang-switcher-option.active {
+  font-weight: 700;
+  color: $primary;
+}
+
+/*-----------------------------------------------
+|   RTL fixes (Arabic) - direction-aware positions that
+|   Bootstrap 5.0's compiled utilities don't flip on their own
+-----------------------------------------------*/
+[dir='rtl'] .icon-badge .badge-count {
+  right: auto;
+  left: -0.6rem;
+}
+[dir='rtl'] .shop-card-badge {
+  left: auto;
+  right: 0.6rem;
+}
+[dir='rtl'] .shop-card-wishlist {
+  right: auto;
+  left: 0.6rem;
+}

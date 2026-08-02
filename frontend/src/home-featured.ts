@@ -1,15 +1,17 @@
 import { getByGender, type Gender, type Product } from './data/products';
 import { minPrice } from './product-card';
+import { t } from './i18n';
+import { escapeHtml } from './escape-html';
 
 function renderFeaturedCard(p: Product): string {
   return `
     <div class="col-md-6">
       <div class="card card-span h-100 text-white">
-        <img class="card-img h-100" src="${p.image}" width="522" height="521" loading="lazy" decoding="async" alt="${p.name}" />
+        <img class="card-img h-100" src="${p.image}" width="522" height="521" loading="lazy" decoding="async" alt="${escapeHtml(p.name)}" />
         <div class="card-img-overlay bg-dark-gradient d-flex flex-column-reverse">
-          <h6 class="text-primary">From ${minPrice(p)} DH</h6>
-          <p class="text-400 fs-1">${p.family} &middot; Eau de Parfum</p>
-          <h4 class="text-light">${p.name}</h4>
+          <h6 class="text-primary">${t('product.from')} ${minPrice(p)} DH</h6>
+          <p class="text-400 fs-1">${t(`family.${p.family}`)} &middot; ${t('product.eauDeParfum')}</p>
+          <h4 class="text-light">${escapeHtml(p.name)}</h4>
         </div>
         <a class="stretched-link" href="product.html?id=${p.id}"></a>
       </div>

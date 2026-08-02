@@ -1,6 +1,8 @@
 import { getWishlist, removeFromWishlist } from './wishlist';
 import { getProductById, type Product } from './data/products';
 import { addToCart } from './cart';
+import { t } from './i18n';
+import { escapeHtml } from './escape-html';
 
 function render() {
   const ids = getWishlist();
@@ -21,15 +23,15 @@ function render() {
       (p) => `
         <div class="shop-card">
           <a href="product.html?id=${p.id}">
-            <div class="shop-card-image-wrap"><img src="${p.image}" alt="${p.name}" loading="lazy" width="390" height="520" /></div>
+            <div class="shop-card-image-wrap"><img src="${p.image}" alt="${escapeHtml(p.name)}" loading="lazy" width="390" height="520" /></div>
           </a>
           <div class="shop-card-body">
-            <span class="shop-card-family">${p.family}</span>
-            <p class="shop-card-name">${p.name}</p>
-            <span class="shop-card-price">From ${Math.min(...p.sizes.map((s) => s.price))} DH</span>
+            <span class="shop-card-family">${t(`family.${p.family}`)}</span>
+            <p class="shop-card-name">${escapeHtml(p.name)}</p>
+            <span class="shop-card-price">${t('product.from')} ${Math.min(...p.sizes.map((s) => s.price))} DH</span>
             <div class="d-flex gap-2 mt-2">
-              <button type="button" class="btn btn-sm btn-dark flex-grow-1" data-action="move" data-id="${p.id}">Add to Cart</button>
-              <button type="button" class="btn btn-sm btn-outline-secondary" data-action="remove" data-id="${p.id}">Remove</button>
+              <button type="button" class="btn btn-sm btn-dark flex-grow-1" data-action="move" data-id="${p.id}">${t('product.addToCart')}</button>
+              <button type="button" class="btn btn-sm btn-outline-secondary" data-action="remove" data-id="${p.id}">${t('cart.remove')}</button>
             </div>
           </div>
         </div>
