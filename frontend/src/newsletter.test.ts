@@ -1,6 +1,7 @@
 // @vitest-environment jsdom
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { initNewsletter } from './newsletter';
+import { setLocale } from './i18n';
 
 function setupDom() {
   document.body.innerHTML = `
@@ -25,6 +26,7 @@ async function flushAsync() {
 
 describe('newsletter signup', () => {
   beforeEach(() => {
+    setLocale('en'); // pin the language so assertions below don't depend on whatever the default happens to be
     setupDom();
     initNewsletter();
   });

@@ -10,7 +10,7 @@
       (function () {
         try {
           var l = localStorage.getItem('yy-parfums-locale');
-          if (l !== 'fr' && l !== 'ar') l = 'en';
+          if (l !== 'en' && l !== 'ar') l = 'fr';
           document.documentElement.lang = l;
           document.documentElement.dir = l === 'ar' ? 'rtl' : 'ltr';
         } catch (e) {}

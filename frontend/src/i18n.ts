@@ -357,16 +357,18 @@ const dictionaries: Record<Locale, Record<string, string>> = {
   },
 };
 
-let currentLocale: Locale = 'en';
+// French is the default for first-time visitors (no saved preference yet) - English and
+// Arabic are only ever shown once someone has explicitly picked them via the switcher.
+let currentLocale: Locale = 'fr';
 
 function readStoredLocale(): Locale {
   try {
     const stored = localStorage.getItem(STORAGE_KEY);
     if (stored === 'en' || stored === 'fr' || stored === 'ar') return stored;
   } catch {
-    // localStorage unavailable (e.g. private mode) - fall back to English
+    // localStorage unavailable (e.g. private mode) - fall back to French
   }
-  return 'en';
+  return 'fr';
 }
 
 export function getLocale(): Locale {
