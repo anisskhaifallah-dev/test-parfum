@@ -5,6 +5,19 @@
 // Place your own theme CSS or SCSS rules below this line, these rules will override any Bootstrap and theme variables.
 
 /*-----------------------------------------------
+|   Navbar logo badge (black backdrop behind the logo only, not the "YY Parfums" text)
+-----------------------------------------------*/
+.navbar-logo-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background-color: $black;
+  border-radius: 50%;
+  padding: 4px;
+  line-height: 0;
+}
+
+/*-----------------------------------------------
 |   Mobile bottom navigation
 -----------------------------------------------*/
 .navbar-bottom-mobile {
