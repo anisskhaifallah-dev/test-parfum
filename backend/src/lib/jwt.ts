@@ -1,6 +1,12 @@
 import jwt from 'jsonwebtoken';
 
-const SECRET = process.env.JWT_SECRET ?? 'dev-secret';
+// No fallback on purpose - a silently-applied default secret would let anyone forge
+// staff tokens if this env var is ever missing in a deployment.
+const SECRET: string =
+  process.env.JWT_SECRET ??
+  (() => {
+    throw new Error('JWT_SECRET environment variable must be set');
+  })();
 
 export interface AuthTokenPayload {
   userId: string;

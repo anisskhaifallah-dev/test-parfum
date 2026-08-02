@@ -8,8 +8,11 @@ import { newsletterRouter } from './routes/newsletter.routes.js';
 import { uploadsRouter } from './routes/uploads.routes.js';
 import { analyticsRouter } from './routes/analytics.routes.js';
 import { errorHandler } from './middleware/error.js';
+import { securityHeaders } from './middleware/security-headers.js';
 
 const app = express();
+
+app.use(securityHeaders);
 
 // Comma-separated list, e.g. "https://www.yyparfum.com,https://yyparfum.com" - lets the
 // storefront be reachable at more than one domain (custom domain + www + Vercel default)

@@ -4,6 +4,7 @@ import { prisma } from '../lib/prisma.js';
 import { signToken } from '../lib/jwt.js';
 import { asyncHandler, HttpError } from '../middleware/error.js';
 import { requireAuth, requireAdmin } from '../middleware/auth.js';
+import { loginLimiter } from '../middleware/rate-limit.js';
 
 // Staff-only. There is no public registration - customers never see this, and the
 // first admin account is created by the seed script (see prisma/seed.ts).
@@ -11,6 +12,7 @@ export const authRouter = Router();
 
 authRouter.post(
   '/login',
+  loginLimiter,
   asyncHandler(async (req, res) => {
     const { email, password } = req.body as { email?: string; password?: string };
     if (!email || !password) throw new HttpError(400, 'email and password are required');
