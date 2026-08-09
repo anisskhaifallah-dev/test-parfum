@@ -12,6 +12,12 @@ import { securityHeaders } from './middleware/security-headers.js';
 
 const app = express();
 
+// Railway terminates TLS at its edge and forwards over plain HTTP internally.
+// Without this, req.protocol/req.ip reflect that internal hop (http, proxy IP)
+// instead of what the browser actually used - which was minting http:// image
+// URLs (mixed content) and bucketing every visitor under the same rate-limit key.
+app.set('trust proxy', 1);
+
 app.use(securityHeaders);
 
 // Comma-separated list, e.g. "https://www.yyparfum.com,https://yyparfum.com" - lets the
