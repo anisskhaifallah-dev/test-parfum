@@ -37,8 +37,6 @@ const dictionaries: Record<Locale, Record<string, string>> = {
     'newsletter.error': 'Something went wrong. Please try again.',
     'newsletter.invalidEmail': 'Please enter a valid email address.',
 
-    'home.heroTitle': 'Thoughtfully composed fragrance, made for everyday wear',
-    'home.heroSubtitle': 'Discover your signature scent',
     'home.shopForHer': 'Shop For Her',
     'home.shopForHim': 'Shop For Him',
     'home.packsBlurb': 'Two or three 10ml decants bundled together, at a better price than buying them apart.',
@@ -123,7 +121,7 @@ const dictionaries: Record<Locale, Record<string, string>> = {
   fr: {
     'nav.forHer': 'Pour Elle',
     'nav.forHim': 'Pour Lui',
-    'nav.packs': 'Coffrets',
+    'nav.packs': 'Packs',
     'nav.home': 'Accueil',
     'nav.search': 'Recherche',
     'nav.wishlist': 'Favoris',
@@ -150,12 +148,10 @@ const dictionaries: Record<Locale, Record<string, string>> = {
     'newsletter.error': "Une erreur s'est produite. Veuillez réessayer.",
     'newsletter.invalidEmail': 'Veuillez saisir une adresse email valide.',
 
-    'home.heroTitle': 'Un parfum pensé avec soin, pour le quotidien',
-    'home.heroSubtitle': 'Découvrez votre signature olfactive',
     'home.shopForHer': 'Découvrir Pour Elle',
     'home.shopForHim': 'Découvrir Pour Lui',
     'home.packsBlurb': 'Deux ou trois décants de 10ml réunis, à un meilleur prix que séparément.',
-    'home.seeAllPacks': 'Voir tous les coffrets',
+    'home.seeAllPacks': 'Voir tous les packs',
 
     'cart.title': 'Votre panier',
     'cart.emptyText': 'Votre panier est vide.',
@@ -169,7 +165,7 @@ const dictionaries: Record<Locale, Record<string, string>> = {
     'cart.thanksTitle': 'Merci ! Votre commande est enregistrée.',
     'cart.thanksBody': 'Notre équipe vous appellera bientôt pour confirmer les détails. Paiement à la livraison.',
     'cart.remove': 'Supprimer',
-    'cart.packLabel': 'Coffret',
+    'cart.packLabel': 'Pack',
     'cart.each': "l'unité",
 
     'form.fullName': 'Nom complet',
@@ -190,9 +186,9 @@ const dictionaries: Record<Locale, Record<string, string>> = {
     'search.resultsCountOne': '{{count}} résultat pour "{{query}}"',
     'search.resultsCountOther': '{{count}} résultats pour "{{query}}"',
 
-    'packs.title': 'Coffrets',
-    'packs.countOne': '{{count}} coffret',
-    'packs.countOther': '{{count}} coffrets',
+    'packs.title': 'Packs',
+    'packs.countOne': '{{count}} pack',
+    'packs.countOther': '{{count}} packs',
 
     'category.titleHer': 'Pour Elle',
     'category.blurbHer': 'Des parfums choisis pour elle, en flacon complet ou en décant.',
@@ -212,7 +208,7 @@ const dictionaries: Record<Locale, Record<string, string>> = {
     'product.youMayAlsoLike': 'Vous aimerez aussi',
     'product.from': 'Dès',
     'product.unavailableBadge': 'Indisponible',
-    'product.addPackToCart': 'Ajouter le coffret au panier',
+    'product.addPackToCart': 'Ajouter le pack au panier',
     'product.added': 'Ajouté !',
 
     'family.Floral': 'Floral',
@@ -228,7 +224,7 @@ const dictionaries: Record<Locale, Record<string, string>> = {
     'title.cart': 'Votre panier | YY Parfums',
     'title.wishlist': 'Vos favoris | YY Parfums',
     'title.search': 'Recherche | YY Parfums',
-    'title.packs': 'Coffrets | YY Parfums',
+    'title.packs': 'Packs | YY Parfums',
     'title.forHim': 'Pour Lui | YY Parfums',
     'title.forHer': 'Pour Elle | YY Parfums',
     'title.product': 'Détails du parfum | YY Parfums',
@@ -263,8 +259,6 @@ const dictionaries: Record<Locale, Record<string, string>> = {
     'newsletter.error': 'حدث خطأ ما. يرجى المحاولة مرة أخرى.',
     'newsletter.invalidEmail': 'يرجى إدخال بريد إلكتروني صالح.',
 
-    'home.heroTitle': 'عطر مركب بعناية، لارتداء يومي',
-    'home.heroSubtitle': 'اكتشف عطرك المميز',
     'home.shopForHer': 'تسوقي لها',
     'home.shopForHim': 'تسوق له',
     'home.packsBlurb': 'عبوتان أو ثلاث عبوات 10 مل مجمعة معًا، بسعر أفضل من شرائها منفصلة.',
