@@ -3,9 +3,14 @@ import { prisma } from '../lib/prisma.js';
 import { asyncHandler, HttpError } from '../middleware/error.js';
 import { requireAuth } from '../middleware/auth.js';
 import { slugify } from '../lib/slug.js';
+import { getCached, invalidateCache, setCached } from '../lib/response-cache.js';
 
 const GENDERS = ['her', 'him'];
 const FAMILIES = ['Floral', 'Woody', 'Oriental', 'Fresh', 'Gourmand', 'Citrus'];
+
+const PRODUCTS_CACHE_KEY = 'products:all';
+const PACKS_CACHE_KEY = 'packs:all';
+const CACHE_TTL_MS = 5 * 60 * 1000;
 
 export const productsRouter = Router();
 
@@ -75,11 +80,18 @@ function parseSizes(raw: unknown): SizeDTO[] {
 productsRouter.get(
   '/',
   asyncHandler(async (_req, res) => {
+    const cached = getCached<ReturnType<typeof toProductDTO>[]>(PRODUCTS_CACHE_KEY);
+    if (cached) {
+      res.json(cached);
+      return;
+    }
     const products = await prisma.product.findMany({
       include: { sizes: true },
       orderBy: [{ sortOrder: 'asc' }, { name: 'asc' }],
     });
-    res.json(products.map(toProductDTO));
+    const dto = products.map(toProductDTO);
+    setCached(PRODUCTS_CACHE_KEY, dto, CACHE_TTL_MS);
+    res.json(dto);
   })
 );
 
@@ -151,6 +163,7 @@ productsRouter.post(
       },
       include: { sizes: true },
     });
+    invalidateCache(PRODUCTS_CACHE_KEY);
     res.status(201).json(toProductDTO(product));
   })
 );
@@ -201,6 +214,7 @@ productsRouter.patch(
         include: { sizes: true },
       });
     });
+    invalidateCache(PRODUCTS_CACHE_KEY);
     res.json(toProductDTO(product));
   })
 );
@@ -219,6 +233,7 @@ productsRouter.delete(
     if (usedInOrder) throw new HttpError(409, 'Cannot delete: this product appears in past orders.');
 
     await prisma.product.delete({ where: { id: req.params.id } });
+    invalidateCache(PRODUCTS_CACHE_KEY);
     res.json({ ok: true });
   })
 );
@@ -265,8 +280,15 @@ async function validateProductIds(productIds: unknown): Promise<string[]> {
 packsRouter.get(
   '/',
   asyncHandler(async (_req, res) => {
+    const cached = getCached<ReturnType<typeof toPackDTO>[]>(PACKS_CACHE_KEY);
+    if (cached) {
+      res.json(cached);
+      return;
+    }
     const packs = await prisma.pack.findMany({ include: { products: { include: { product: true } } } });
-    res.json(packs.map(toPackDTO));
+    const dto = packs.map(toPackDTO);
+    setCached(PACKS_CACHE_KEY, dto, CACHE_TTL_MS);
+    res.json(dto);
   })
 );
 
@@ -325,6 +347,7 @@ packsRouter.post(
       return tx.pack.findUniqueOrThrow({ where: { id }, include: { products: { include: { product: true } } } });
     });
 
+    invalidateCache(PACKS_CACHE_KEY);
     res.status(201).json(toPackDTO(pack));
   })
 );
@@ -373,6 +396,7 @@ packsRouter.patch(
       });
     });
 
+    invalidateCache(PACKS_CACHE_KEY);
     res.json(toPackDTO(pack));
   })
 );
@@ -389,6 +413,7 @@ packsRouter.delete(
 
     await prisma.packProduct.deleteMany({ where: { packId: req.params.id } });
     await prisma.pack.delete({ where: { id: req.params.id } });
+    invalidateCache(PACKS_CACHE_KEY);
     res.json({ ok: true });
   })
 );
