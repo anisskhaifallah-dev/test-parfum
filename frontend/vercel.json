@@ -1,0 +1,5 @@
+{
+  "rewrites": [
+    { "source": "/api/:path*", "destination": "https://test-parfum-production.up.railway.app/api/:path*" }
+  ]
+}

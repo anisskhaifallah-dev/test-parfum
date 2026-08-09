@@ -1,4 +1,8 @@
-export const API_BASE: string = import.meta.env.VITE_API_URL ?? 'http://localhost:4000/api';
+// Relative in production so the browser sees a same-origin request (yyparfum.com/api/...),
+// proxied to the Railway backend by vercel.json - calling the railway.app domain directly
+// is exactly the cross-site pattern Safari content blockers (AdGuard, 1Blocker, etc.) block,
+// which silently emptied every product/pack listing for affected visitors.
+export const API_BASE: string = import.meta.env.VITE_API_URL ?? (import.meta.env.PROD ? '/api' : 'http://localhost:4000/api');
 
 export async function apiFetch<T = unknown>(path: string, options: RequestInit = {}, token?: string): Promise<T> {
   const res = await fetch(`${API_BASE}${path}`, {
