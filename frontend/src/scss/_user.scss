@@ -227,33 +227,6 @@
   object-fit: cover;
   background: $gray-200;
 }
-.notes-pyramid {
-  display: flex;
-  flex-direction: column;
-  gap: 0.9rem;
-  margin: 1.75rem 0;
-  padding: 1.25rem;
-  background: $gray-100;
-  border-radius: $border-radius;
-}
-.notes-row {
-  display: flex;
-  gap: 1rem;
-  align-items: baseline;
-}
-.notes-row .notes-label {
-  width: 70px;
-  flex-shrink: 0;
-  font-size: 0.72rem;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  color: $gray-600;
-  font-weight: 700;
-}
-.notes-row .notes-values {
-  font-size: 0.95rem;
-  color: $gray-900;
-}
 .size-picker {
   display: flex;
   gap: 0.6rem;

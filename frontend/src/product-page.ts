@@ -1,4 +1,4 @@
-import { getProductById, getOthers, NOTES_BY_FAMILY } from './data/products';
+import { getProductById, getOthers } from './data/products';
 import { renderCard, wireWishlistButtons, genderLabel, heartIcon } from './product-card';
 import { addToCart } from './cart';
 import { toggleWishlist, isWishlisted } from './wishlist';
@@ -23,7 +23,6 @@ export function initProductPage(): void {
     return;
   }
 
-  const notes = NOTES_BY_FAMILY[product.family];
   let selectedMl = product.sizes[1]?.ml ?? product.sizes[0].ml;
   const priceFor = (ml: number) => product.sizes.find((s) => s.ml === ml)!.price;
 
@@ -35,11 +34,6 @@ export function initProductPage(): void {
       <span class="shop-card-family">${t(`family.${product.family}`)} &middot; ${genderLabel(product.gender)}</span>
       <h1 class="fw-normal mt-2 mb-3">${escapeHtml(product.name)}</h1>
       <p class="text-700">${escapeHtml(product.blurb)}</p>
-      <div class="notes-pyramid">
-        <div class="notes-row"><span class="notes-label">${t('product.top')}</span><span class="notes-values">${notes.top.join(', ')}</span></div>
-        <div class="notes-row"><span class="notes-label">${t('product.heart')}</span><span class="notes-values">${notes.heart.join(', ')}</span></div>
-        <div class="notes-row"><span class="notes-label">${t('product.base')}</span><span class="notes-values">${notes.base.join(', ')}</span></div>
-      </div>
       <div class="size-picker" id="size-picker">
         ${product.sizes.map((s) => `<button type="button" class="size-option ${s.ml === selectedMl ? 'active' : ''}" data-ml="${s.ml}">${escapeHtml(s.label)}</button>`).join('')}
       </div>

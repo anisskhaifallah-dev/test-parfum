@@ -90,9 +90,6 @@ const dictionaries: Record<Locale, Record<string, string>> = {
 
     'product.notFound': "We couldn't find that fragrance.",
     'product.backToShop': 'Back to Shop',
-    'product.top': 'Top',
-    'product.heart': 'Heart',
-    'product.base': 'Base',
     'product.eauDeParfum': 'Eau de Parfum',
     'product.addToCart': 'Add to Cart',
     'product.outOfStock': 'Out of Stock',
@@ -206,9 +203,6 @@ const dictionaries: Record<Locale, Record<string, string>> = {
 
     'product.notFound': "Nous n'avons pas trouvé ce parfum.",
     'product.backToShop': 'Retour à la boutique',
-    'product.top': 'Tête',
-    'product.heart': 'Coeur',
-    'product.base': 'Fond',
     'product.eauDeParfum': 'Eau de Parfum',
     'product.addToCart': 'Ajouter au panier',
     'product.outOfStock': 'Épuisé',
@@ -322,9 +316,6 @@ const dictionaries: Record<Locale, Record<string, string>> = {
 
     'product.notFound': 'لم نتمكن من العثور على هذا العطر.',
     'product.backToShop': 'العودة إلى المتجر',
-    'product.top': 'المقدمة',
-    'product.heart': 'القلب',
-    'product.base': 'القاعدة',
     'product.eauDeParfum': 'Eau de Parfum',
     'product.addToCart': 'أضف إلى السلة',
     'product.outOfStock': 'غير متوفر',
